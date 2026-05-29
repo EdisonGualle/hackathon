@@ -7,6 +7,12 @@ para asignar a cada siniestro un **score de riesgo explicable** y generar **aler
 > ⚖️ **Importante:** FRAUDIA genera **alertas de revisión**, no acusaciones formales de fraude.
 > La decisión final es siempre del analista humano.
 
+### 🌐 App en vivo
+
+👉 **[https://devminds.streamlit.app/](https://devminds.streamlit.app/)**
+
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://devminds.streamlit.app/)
+
 ---
 
 ## 🚀 Instalación
@@ -131,7 +137,10 @@ RF-03 (Lista restrictiva), RF-04 (Dinámica imposible).
 > ⚠️ **Streamlit NO funciona en Vercel/Netlify** (son para sitios estáticos/serverless; Streamlit
 > necesita un servidor persistente con websockets). Usa una de estas opciones:
 
-### Opción A — Streamlit Community Cloud (recomendada, gratis)
+### Opción A — Streamlit Community Cloud (recomendada, gratis) ✅ EN VIVO
+La app ya está desplegada aquí: **[https://devminds.streamlit.app/](https://devminds.streamlit.app/)**
+
+Para replicarlo:
 1. Sube el repo a GitHub (público).
 2. Entra a [share.streamlit.io](https://share.streamlit.io) con tu cuenta de GitHub.
 3. *New app* → elige el repo, rama y `app.py` → **Deploy**.
