@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "Machine Learning": {
+      "source": "midudev/autoskills",
+      "sourceType": "github",
+      "skillPath": "packages/autoskills/skills-registry/machine-learning/SKILL.md",
+      "computedHash": "e48f3af1e23a09276b5b5f9b18fb507c16029c768493fac7d85104994eb58795"
+    },
+    "Pandas Data Analysis": {
+      "source": "midudev/autoskills",
+      "sourceType": "github",
+      "skillPath": "packages/autoskills/skills-registry/pandas-data-analysis/SKILL.md",
+      "computedHash": "33ee9dcf6d5ea38d65bb59c4c6c1337d90688a71829d76cd781de403e68dd533"
+    },
+    "frontend-design": {
+      "source": "midudev/autoskills",
+      "sourceType": "github",
+      "skillPath": "packages/autoskills/skills-registry/frontend-design/SKILL.md",
+      "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "pandas-pro": {
+      "source": "midudev/autoskills",
+      "sourceType": "github",
+      "skillPath": "packages/autoskills/skills-registry/pandas-pro/SKILL.md",
+      "computedHash": "244a87c4e9e20aac2822cdd99a221a7fa6999bf1194abbbd4a5e16bde34bf6ef"
+    }
+  }
+}
