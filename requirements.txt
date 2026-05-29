@@ -1,12 +1,30 @@
+# ── Núcleo de datos y app ──────────────────────────────
 streamlit>=1.32.0
 pandas>=2.0.0
 openpyxl>=3.1.0
-pdfplumber>=0.10.0
-sentence-transformers>=2.6.0
-faiss-cpu>=1.7.4
-groq>=0.9.0
-plotly>=5.18.0
-networkx>=3.2.0
 numpy>=1.26.0
 python-dotenv>=1.0.0
+
+# ── Extracción documental (PDF) ────────────────────────
+pdfplumber>=0.10.0
+
+# ── Machine Learning + NLP ─────────────────────────────
 scikit-learn>=1.3.0
+sentence-transformers>=2.6.0
+faiss-cpu>=1.7.4
+
+# ── Agente IA (RAG + LLM) ──────────────────────────────
+groq>=0.9.0
+
+# ── Visualización y grafos ─────────────────────────────
+plotly>=5.18.0
+networkx>=3.2.0
+
+# ── Reporte ejecutivo PDF ──────────────────────────────
+fpdf2>=2.7.0
+
+# ── API REST (FastAPI) ─────────────────────────────────
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.0.0
+python-multipart>=0.0.9

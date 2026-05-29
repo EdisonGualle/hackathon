@@ -50,14 +50,6 @@ def score_siniestro(row: dict, pdf_fields: dict | None = None) -> dict:
     elif veh_freq == 2:
         pts.append(("Frecuencia media siniestros mismo vehículo (2)", 3, "S4"))
 
-    # ── Señal S5: Alta frecuencia de conductor vehículo ───
-    # En la demo, el asegurado actúa como el conductor principal registrado
-    cond_prev = _f(_col(row, "reclamos previos asegurado", "reclamos previos"))
-    if cond_prev >= 3:
-        pts.append(("Alta frecuencia del conductor (≥3)", 8, "S5"))
-    elif cond_prev == 2:
-        pts.append(("Frecuencia media del conductor (2)", 4, "S5"))
-
     # ── Señal S6: Alta frecuencia reclamos solo RC ───
     rc_freq = int(_f(pdf_fields.get("rc_sin_tercero", 0))) if pdf_fields else 0
     if "responsabilidad civil" in cobertura or cobertura == "rc":
@@ -79,12 +71,16 @@ def score_siniestro(row: dict, pdf_fields: dict | None = None) -> dict:
     elif borde <= 30:
         pts.append(("Siniestro cercano a vigencia (11-30 días)", 4, "RF-05"))
 
-    # ── Señal: Frecuencia reclamos asegurado ─────────────────────────
+    # ── Señal S3/S5: Frecuencia reclamos del asegurado-conductor ──────
+    # El dataset solo registra el historial del asegurado, quien actúa como
+    # conductor principal. Por eso S03 (frecuencia asegurado) y S05 (frecuencia
+    # conductor) comparten una única fuente y se puntúan UNA sola vez para evitar
+    # inflar el score con doble conteo del mismo dato.
     prev = _f(_col(row, "reclamos previos asegurado", "reclamos previos"))
     if prev >= 3:
-        pts.append(("Alta frecuencia reclamos asegurado (≥3)", 8, "FREQ-A"))
+        pts.append(("Alta frecuencia reclamos asegurado/conductor (≥3)", 8, "S3"))
     elif prev == 2:
-        pts.append(("Frecuencia media reclamos asegurado (2)", 4, "FREQ-A"))
+        pts.append(("Frecuencia media reclamos asegurado/conductor (2)", 4, "S3"))
 
     # ── Señal: Proveedor en lista restrictiva → RF-03 ROJO ────────────
     if lista_rest in ("sí", "si", "yes", "1", "true"):

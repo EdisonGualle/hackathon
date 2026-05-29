@@ -39,154 +39,325 @@ from src.network_graph import build_graph
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="FRAUDIA · Antifraude IA",
-    page_icon="🔍",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ── CSS: Tema Blanco y Azul Corporativo ──────────────────────────────────────
+# ── CSS: Sistema de diseño corporativo "Aseguradora del Sur" ──────────────────
 st.markdown("""
 <style>
-/* ══ BASE: todo blanco/azul ══ */
-.stApp { background-color: #FFFFFF !important; }
-.stApp p, .stApp span, .stApp label, .stApp div { color: #1A3A5C; }
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
-/* ── Sidebar ── */
-[data-testid="stSidebar"] { background: #EBF5FB !important; border-right:2px solid #AED6F1; }
-[data-testid="stSidebarContent"] * { color: #1A3A5C !important; }
-
-/* ── Bloque principal ── */
-.main .block-container { padding-top: 1rem; background: white; }
-section[data-testid="stMain"] { background: white !important; }
-
-/* ── Encabezados ── */
-h1, h2, h3, h4 { color: #1B4F8A !important; }
-.stMarkdown h1, .stMarkdown h2, .stMarkdown h3 { color: #1B4F8A !important; }
-
-/* ── Tabs ── */
-.stTabs [data-baseweb="tab-list"] {
-    background: #EBF5FB; border-radius:10px; padding:4px; gap:4px;
-    border: 1px solid #D6EAF8;
-}
-.stTabs [data-baseweb="tab"] {
-    background: transparent; color: #2471A3 !important;
-    border-radius:8px; font-weight:600; font-size:.85rem;
-}
-.stTabs [aria-selected="true"] {
-    background: #1B4F8A !important; color: white !important;
-}
-.stTabs [data-baseweb="tab-panel"] { background: white; }
-
-/* ── Inputs ── */
-.stTextInput input, .stTextArea textarea {
-    background: white !important; color: #1A3A5C !important;
-    border: 1px solid #AED6F1 !important; border-radius:6px !important;
-}
-.stTextInput input:focus { border-color: #1B4F8A !important; }
-.stTextInput label, .stTextArea label { color: #1B4F8A !important; font-weight:600; }
-
-/* ── Selectbox ── */
-.stSelectbox > div > div {
-    background: white !important; color: #1A3A5C !important;
-    border: 1px solid #AED6F1 !important;
-}
-.stSelectbox label { color: #1B4F8A !important; font-weight:600; }
-[data-baseweb="select"] { background: white !important; }
-[data-baseweb="select"] * { color: #1A3A5C !important; background: white !important; }
-[data-baseweb="popover"] { background: white !important; border:1px solid #D6EAF8 !important; }
-[data-baseweb="menu"] { background: white !important; }
-[data-baseweb="option"] { background: white !important; color: #1A3A5C !important; }
-[data-baseweb="option"]:hover { background: #EBF5FB !important; }
-
-/* ── Multiselect ── */
-[data-baseweb="tag"] { background: #1B4F8A !important; color: white !important; }
-.stMultiSelect label { color: #1B4F8A !important; font-weight:600; }
-
-/* ── Radio ── */
-.stRadio label { color: #1A3A5C !important; }
-.stRadio [role="radiogroup"] label { color: #1A3A5C !important; }
-
-/* ── Dataframe / Table ── */
-.stDataFrame, .stDataFrame * { color: #1A3A5C !important; }
-[data-testid="stDataFrame"] { background: white !important; }
-.dataframe th { background: #1B4F8A !important; color: white !important; }
-.dataframe td { background: white !important; color: #1A3A5C !important; }
-
-/* ── Expander ── */
-.streamlit-expanderHeader {
-    background: #EBF5FB !important; color: #1B4F8A !important;
-    border-radius:8px; border:1px solid #D6EAF8 !important;
-    font-weight:600;
-}
-.streamlit-expanderContent {
-    background: white !important; border:1px solid #D6EAF8 !important;
+:root{
+  /* superficies */
+  --surface:#FFFFFF; --surface-2:#F6F8FC; --surface-3:#EEF4FA;
+  --bg-app:#F6F8FC;
+  /* sidebar oscuro */
+  --bg-sidebar:#0E1C2F; --bg-sidebar-2:#162B45; --bg-hover:#1A3050;
+  --text-sidebar:#C8D9EC; --text-sidebar-muted:#7E93AC;
+  /* texto */
+  --navy-900:#0A2A45; --navy-800:#0F2544; --navy-700:#13456E; --navy-600:#1B5A8C;
+  --ink:#0F2544; --muted:#4A6080; --faint:#8FA3BA;
+  /* acento */
+  --accent:#1A6FB5; --accent-hover:#155B99; --accent-light:#E8F2FC;
+  --blue-500:#1A6FB5; --blue-300:#7FB2D6; --blue-100:#E8F2FC;
+  --border:#E4ECF4; --border-strong:#D2E0EC;
+  /* semáforo refinado (no saturado) */
+  --red:#C0392B;   --red-bg:#FDF1F0; --red-bd:#E8ADA9;
+  --amber:#B7770D; --amber-bg:#FDFAE9; --amber-bd:#E8D7A1;
+  --green:#0E7D6E; --green-bg:#EDF9F6; --green-bd:#A1D9CF;
+  /* sombras */
+  --shadow-sm:0 1px 4px rgba(15,37,68,.06);
+  --shadow-md:0 4px 16px rgba(15,37,68,.08);
+  --shadow-lg:0 10px 32px rgba(15,37,68,.12);
+  /* fuentes (con fallback de emojis para evitar cuadritos □ en Windows) */
+  --font:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI','Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'Segoe UI Emoji',monospace;
+  --ease:cubic-bezier(.4,0,.2,1);
 }
 
-/* ── Divider ── */
-hr { border-color: #D6EAF8 !important; }
-
-/* ── Metrics ── */
-[data-testid="metric-container"] { background: white !important; }
-[data-testid="metric-container"] label { color: #5D6D7E !important; }
-[data-testid="metric-container"] [data-testid="stMetricValue"] { color: #1B4F8A !important; }
-
-/* ── Alerts (info, warning, error, success) ── */
-.stAlert { border-radius: 8px !important; }
-[data-baseweb="notification"] { background: white !important; }
-
-/* ── Form ── */
-[data-testid="stForm"] { background: white !important; border:1px solid #D6EAF8; border-radius:10px; padding:10px; }
-
-/* ── Spinner ── */
-.stSpinner > div { border-top-color: #1B4F8A !important; }
-
-/* ── Captions ── */
-.stCaption, small, caption { color: #5D6D7E !important; }
-
-/* ── Botones ── */
-.stButton>button {
-    background: #1B4F8A !important; color: white !important;
-    border: none !important; border-radius:8px !important;
-    font-weight:600 !important;
+/* ══ BASE ══ */
+html, body, .stApp { background:var(--bg-app) !important; }
+.stApp, .stApp p, .stApp span, .stApp label, .stApp li, .stApp div {
+  font-family:var(--font); color:var(--ink);
 }
-.stButton>button:hover { background: #2471A3 !important; }
-.stDownloadButton>button {
-    background: #27AE60 !important; color: white !important;
-    border: none !important; border-radius:8px !important; font-weight:600 !important;
+code, kbd, .mono { font-family:var(--font-mono) !important; }
+.main .block-container { padding-top:1.4rem; padding-bottom:3rem; max-width:1340px; }
+section[data-testid="stMain"]{ background:var(--bg-app) !important; }
+
+/* ══ TIPOGRAFÍA DE TÍTULOS ══ */
+h1,h2,h3,h4,h5{
+  font-family:var(--font) !important;
+  color:var(--navy-800) !important; letter-spacing:-.02em; font-weight:800 !important;
 }
-.stDownloadButton>button:hover { background: #1E8449 !important; }
+h1{ font-size:2rem !important; letter-spacing:-.04em; }
+h2{ font-size:1.4rem !important; font-weight:700 !important; }
+h3{ font-size:1.1rem !important; font-weight:600 !important; letter-spacing:-.01em; }
+.stMarkdown h1,.stMarkdown h2,.stMarkdown h3{ color:var(--navy-800) !important; }
 
-/* ── KPI Cards ── */
-.kpi-box {
-    background: #F8FBFF; border-radius:14px; padding:20px 12px;
-    text-align:center; border:2px solid #D6EAF8;
-    box-shadow: 0 2px 10px rgba(27,79,138,0.08);
+/* ══ SIDEBAR OSCURO PREMIUM ══ */
+[data-testid="stSidebar"]{
+  background:var(--bg-sidebar) !important;
+  border-right:1px solid rgba(255,255,255,.06);
 }
-.kpi-val { font-size:2.1rem; font-weight:900; }
-.kpi-lbl { font-size:.78rem; color:#5D6D7E; margin-top:4px; }
+[data-testid="stSidebarContent"]{ padding-top:.6rem; }
+[data-testid="stSidebar"] *{ color:var(--text-sidebar); }
+[data-testid="stSidebar"] h1,[data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] h4{ color:#fff !important; }
+[data-testid="stSidebar"] label{ color:var(--text-sidebar) !important; font-weight:600; font-size:.8rem; }
+[data-testid="stSidebar"] hr{ border-color:rgba(255,255,255,.08) !important; }
+[data-testid="stSidebar"] .stCaption,[data-testid="stSidebar"] small{ color:var(--text-sidebar-muted) !important; }
+/* inputs dentro del sidebar oscuro */
+[data-testid="stSidebar"] .stTextInput input,
+[data-testid="stSidebar"] .stSelectbox > div > div,
+[data-testid="stSidebar"] [data-baseweb="select"] > div{
+  background:var(--bg-sidebar-2) !important; color:#EAF2FB !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+}
+[data-testid="stSidebar"] [data-baseweb="select"] *{ color:#EAF2FB !important; }
+[data-testid="stSidebar"] details > summary{
+  background:var(--bg-sidebar-2) !important; color:var(--text-sidebar) !important;
+  border:1px solid rgba(255,255,255,.1) !important;
+}
+/* botón primario del sidebar */
+[data-testid="stSidebar"] .stButton>button{
+  background:var(--accent) !important; border-color:var(--accent) !important;
+}
+[data-testid="stSidebar"] .stButton>button:hover{ background:var(--accent-hover) !important; }
 
-/* ── Cards de alerta ── */
-.card-rojo  { background:#FEF5F5; border-left:4px solid #E74C3C; padding:10px 14px; border-radius:6px; margin:4px 0; color:#1A3A5C; }
-.card-amar  { background:#FEFAF0; border-left:4px solid #F39C12; padding:10px 14px; border-radius:6px; margin:4px 0; color:#1A3A5C; }
-.card-verde { background:#F0FDF4; border-left:4px solid #27AE60; padding:10px 14px; border-radius:6px; margin:4px 0; color:#1A3A5C; }
-.card-azul  { background:#EBF5FB; border-left:4px solid #2980B9; padding:10px 14px; border-radius:6px; margin:4px 0; color:#1A3A5C; }
-.match-ok   { background:#F0FDF4; border-left:4px solid #27AE60; padding:7px 12px;  border-radius:4px; margin:3px 0; color:#1A3A5C; }
-.issue-CRÍTICO { background:#FEF5F5; border-left:4px solid #E74C3C; padding:8px 12px; border-radius:4px; margin:3px 0; color:#1A3A5C; }
-.issue-ALTO    { background:#FFF8F0; border-left:4px solid #E67E22; padding:8px 12px; border-radius:4px; margin:3px 0; color:#1A3A5C; }
-.issue-MEDIO   { background:#FEFAF0; border-left:4px solid #F39C12; padding:8px 12px; border-radius:4px; margin:3px 0; color:#1A3A5C; }
+/* ══ MENÚ DE NAVEGACIÓN (radio estilizado) ══ */
+[data-testid="stSidebar"] [role="radiogroup"]{ gap:2px; }
+[data-testid="stSidebar"] [role="radiogroup"] > label{
+  display:flex; align-items:center; width:100%;
+  padding:9px 12px; margin:1px 0; border-radius:9px;
+  border-left:3px solid transparent; cursor:pointer;
+  transition:all .15s var(--ease); font-size:.9rem !important; font-weight:600;
+  color:var(--text-sidebar) !important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] > label:hover{ background:var(--bg-hover); }
+[data-testid="stSidebar"] [role="radiogroup"] > label > div:first-child{ display:none; }
+/* texto de cada ítem del menú legible sobre fondo oscuro */
+[data-testid="stSidebar"] [role="radiogroup"] > label p,
+[data-testid="stSidebar"] [role="radiogroup"] > label div,
+[data-testid="stSidebar"] [role="radiogroup"] > label span{ color:#C8D9EC !important; }
+[data-testid="stSidebar"] [role="radiogroup"] > label:hover p,
+[data-testid="stSidebar"] [role="radiogroup"] > label:hover div,
+[data-testid="stSidebar"] [role="radiogroup"] > label:hover span{ color:#FFFFFF !important; }
+[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked){
+  background:var(--bg-sidebar-2); border-left:3px solid var(--accent);
+}
+[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p,
+[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) div,
+[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) span{ color:#FFFFFF !important; }
+/* títulos markdown del sidebar (Dataset de siniestros, etc.) */
+[data-testid="stSidebar"] .stMarkdown p,
+[data-testid="stSidebar"] .stMarkdown strong{ color:var(--text-sidebar) !important; }
+.nav-section{ color:var(--text-sidebar-muted) !important; font-size:.66rem; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase; margin:14px 4px 4px; }
+[data-testid="stSidebar"] .nav-section{ color:var(--text-sidebar-muted) !important; }
 
-/* ── Score bar ── */
-.score-track      { background:#E8EAF0; border-radius:8px; height:14px; overflow:hidden; }
-.score-fill-rojo  { background:linear-gradient(90deg,#E74C3C,#C0392B); height:14px; border-radius:8px; }
-.score-fill-amar  { background:linear-gradient(90deg,#F39C12,#E67E22); height:14px; border-radius:8px; }
-.score-fill-verde { background:linear-gradient(90deg,#27AE60,#1E8449); height:14px; border-radius:8px; }
+/* ══ TABS — segmentado tipo "app moderna" ══ */
+.stTabs [data-baseweb="tab-list"]{
+  background:var(--surface-2); border:1px solid var(--border);
+  border-radius:12px; padding:5px; gap:3px;
+}
+.stTabs [data-baseweb="tab"]{
+  background:transparent; color:var(--muted) !important;
+  border-radius:8px; font-weight:600; font-size:.84rem;
+  padding:7px 14px; transition:all .15s ease; border:1px solid transparent;
+}
+.stTabs [data-baseweb="tab"]:hover{ color:var(--navy-700) !important; background:rgba(255,255,255,.6); }
+.stTabs [aria-selected="true"]{
+  background:var(--surface) !important; color:var(--navy-800) !important;
+  border:1px solid var(--border-strong); box-shadow:var(--shadow-sm);
+}
+.stTabs [data-baseweb="tab-highlight"]{ background:transparent !important; }
+.stTabs [data-baseweb="tab-border"]{ background:transparent !important; }
+.stTabs [data-baseweb="tab-panel"]{ background:var(--surface); padding-top:1.1rem; }
 
-/* ── Chat ── */
-.chat-user { background:#EBF5FB; border-radius:12px; padding:10px 14px; margin:6px 0; border:1px solid #D6EAF8; color:#1A3A5C; }
-.chat-bot  { background:#F8FBFF; border-radius:12px; padding:10px 14px; margin:6px 0; border:1px solid #AED6F1; color:#1A3A5C; }
+/* ══ INPUTS ══ */
+.stTextInput input, .stTextArea textarea, .stNumberInput input{
+  background:var(--surface) !important; color:var(--ink) !important;
+  border:1px solid var(--border-strong) !important; border-radius:9px !important;
+  font-size:.9rem !important;
+}
+.stTextInput input:focus, .stTextArea textarea:focus{
+  border-color:var(--blue-500) !important;
+  box-shadow:0 0 0 3px rgba(46,124,184,.14) !important;
+}
+.stTextInput label, .stTextArea label{ color:var(--navy-700) !important; font-weight:600; }
 
-/* ── Sidebar labels ── */
-[data-testid="stSidebar"] label { color: #1B4F8A !important; font-weight:600; }
+/* ══ SELECT / MULTISELECT ══ */
+.stSelectbox > div > div, [data-baseweb="select"] > div{
+  background:var(--surface) !important; color:var(--ink) !important;
+  border:1px solid var(--border-strong) !important; border-radius:9px !important;
+}
+.stSelectbox label, .stMultiSelect label{ color:var(--navy-700) !important; font-weight:600; }
+[data-baseweb="select"] *{ color:var(--ink) !important; }
+[data-baseweb="popover"]{ background:var(--surface) !important; border:1px solid var(--border) !important;
+  border-radius:10px !important; box-shadow:var(--shadow-md) !important; }
+[data-baseweb="menu"]{ background:var(--surface) !important; }
+[data-baseweb="option"]{ background:var(--surface) !important; color:var(--ink) !important; }
+[data-baseweb="option"]:hover{ background:var(--surface-3) !important; }
+[data-baseweb="tag"]{ background:var(--navy-700) !important; color:#fff !important; border-radius:6px !important; }
+
+/* ══ RADIO ══ */
+.stRadio label, .stRadio [role="radiogroup"] label{ color:var(--ink) !important; }
+
+/* ══ DATAFRAME ══ */
+[data-testid="stDataFrame"]{ background:var(--surface) !important;
+  border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.stDataFrame, .stDataFrame *{ color:var(--ink) !important; }
+.dataframe th{ background:var(--navy-700) !important; color:#fff !important;
+  font-weight:600 !important; }
+.dataframe td{ background:var(--surface) !important; color:var(--ink) !important; }
+
+/* ══ EXPANDER ══ */
+.streamlit-expanderHeader, details > summary{
+  background:var(--surface-2) !important; color:var(--navy-700) !important;
+  border-radius:10px; border:1px solid var(--border) !important; font-weight:600;
+}
+.streamlit-expanderContent{ background:var(--surface) !important;
+  border:1px solid var(--border) !important; border-top:none !important; }
+
+/* ══ DIVIDER ══ */
+hr{ border-color:var(--border) !important; margin:1rem 0 !important; }
+
+/* ══ METRICS ══ */
+[data-testid="metric-container"]{ background:var(--surface) !important;
+  border:1px solid var(--border); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow-sm); }
+[data-testid="metric-container"] label{ color:var(--muted) !important; font-weight:500; }
+[data-testid="metric-container"] [data-testid="stMetricValue"]{ color:var(--navy-800) !important; }
+
+/* ══ ALERTS ══ */
+.stAlert{ border-radius:11px !important; border:1px solid var(--border) !important; }
+[data-baseweb="notification"]{ background:var(--surface) !important; }
+
+/* ══ FORM ══ */
+[data-testid="stForm"]{ background:var(--surface-2) !important; border:1px solid var(--border);
+  border-radius:14px; padding:16px; }
+
+.stSpinner > div{ border-top-color:var(--navy-700) !important; }
+.stCaption, small, caption{ color:var(--muted) !important; }
+
+/* ══ BOTONES ══ */
+.stButton>button{
+  background:var(--accent) !important; color:#fff !important;
+  border:1px solid var(--accent) !important; border-radius:9px !important;
+  font-weight:600 !important; font-size:.88rem !important; padding:.5rem 1rem !important;
+  transition:all .15s var(--ease); box-shadow:var(--shadow-sm);
+}
+.stButton>button:hover{ background:var(--accent-hover) !important; border-color:var(--accent-hover) !important;
+  transform:translateY(-1px); box-shadow:var(--shadow-md); }
+.stButton>button:active{ transform:translateY(0); }
+.stButton>button[kind="secondary"]{ background:var(--surface) !important;
+  color:var(--navy-700) !important; border:1px solid var(--border-strong) !important; }
+.stButton>button[kind="secondary"]:hover{ background:var(--surface-3) !important; }
+.stDownloadButton>button{
+  background:var(--green) !important; color:#fff !important; border:none !important;
+  border-radius:9px !important; font-weight:600 !important; box-shadow:var(--shadow-sm);
+}
+.stDownloadButton>button:hover{ background:#198a5d !important; transform:translateY(-1px); box-shadow:var(--shadow-md); }
+
+/* ══ KPI CARDS ══ */
+.kpi-box{
+  background:var(--surface); border-radius:14px; padding:18px 14px; text-align:center;
+  border:1px solid var(--border); box-shadow:var(--shadow-sm);
+  position:relative; overflow:hidden; transition:all .18s ease;
+}
+.kpi-box::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--navy-700),var(--blue-500)); }
+.kpi-box:hover{ box-shadow:var(--shadow-md); transform:translateY(-2px); }
+.kpi-val{ font-family:'Plus Jakarta Sans',sans-serif; font-size:2rem; font-weight:800; line-height:1.1; }
+.kpi-lbl{ font-size:.74rem; color:var(--muted); margin-top:5px; font-weight:500;
+  text-transform:uppercase; letter-spacing:.04em; }
+
+/* ══ CARDS DE ALERTA ══ */
+.card-rojo,.card-amar,.card-verde,.card-azul{
+  padding:12px 16px; border-radius:11px; margin:6px 0; font-size:.92rem;
+  box-shadow:var(--shadow-sm); line-height:1.5;
+}
+.card-rojo { background:var(--red-bg);   border:1px solid var(--red-bd);   border-left:4px solid var(--red); }
+.card-amar { background:var(--amber-bg); border:1px solid var(--amber-bd); border-left:4px solid var(--amber); }
+.card-verde{ background:var(--green-bg); border:1px solid var(--green-bd); border-left:4px solid var(--green); }
+.card-azul { background:var(--blue-100); border:1px solid var(--border-strong); border-left:4px solid var(--blue-500); }
+.match-ok      { background:var(--green-bg); border-left:4px solid var(--green); padding:8px 13px; border-radius:8px; margin:4px 0; }
+.issue-CRÍTICO { background:var(--red-bg);   border-left:4px solid var(--red);   padding:9px 13px; border-radius:8px; margin:4px 0; }
+.issue-ALTO    { background:#FDF1E7;        border-left:4px solid #E2740F;       padding:9px 13px; border-radius:8px; margin:4px 0; }
+.issue-MEDIO   { background:var(--amber-bg); border-left:4px solid var(--amber); padding:9px 13px; border-radius:8px; margin:4px 0; }
+
+/* ══ SCORE BAR ══ */
+.score-track     { background:var(--surface-3); border-radius:10px; height:13px; overflow:hidden; border:1px solid var(--border); }
+.score-fill-rojo { background:linear-gradient(90deg,#E2614F,var(--red)); height:13px; border-radius:10px; }
+.score-fill-amar { background:linear-gradient(90deg,#EBA63E,var(--amber)); height:13px; border-radius:10px; }
+.score-fill-verde{ background:linear-gradient(90deg,#34B07D,var(--green)); height:13px; border-radius:10px; }
+
+/* ══ CHAT (burbujas asimétricas) ══ */
+.chat-user{ background:var(--bg-sidebar); color:#EAF2FB !important; border:none;
+  border-radius:16px 16px 4px 16px; padding:11px 16px; margin:8px 0 8px auto;
+  font-size:.92rem; max-width:80%; width:fit-content; box-shadow:var(--shadow-sm); }
+.chat-user *{ color:#EAF2FB !important; }
+.chat-bot { background:var(--surface); border:1px solid var(--border);
+  border-radius:4px 16px 16px 16px; padding:11px 16px; margin:8px auto 8px 0;
+  font-size:.92rem; max-width:88%; width:fit-content; box-shadow:var(--shadow-sm); }
+
+/* ══ BADGES / CHIPS DE NIVEL ══ */
+.badge{ display:inline-block; padding:3px 11px; border-radius:999px;
+  font-size:.74rem; font-weight:700; letter-spacing:.02em; }
+.badge-rojo { background:var(--red-bg);   color:var(--red);   border:1px solid var(--red-bd); }
+.badge-amar { background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-bd); }
+.badge-verde{ background:var(--green-bg); color:var(--green); border:1px solid var(--green-bd); }
+
+/* ══ PANEL DE AHORRO (gradiente oscuro) ══ */
+.save-panel{ background:linear-gradient(135deg,#0E1C2F 0%,#1A4A7A 100%);
+  border-radius:18px; padding:24px 28px; color:#fff; box-shadow:var(--shadow-lg);
+  display:flex; justify-content:space-between; flex-wrap:wrap; gap:18px; align-items:center; }
+.save-panel *{ color:#fff !important; }
+.save-item{ text-align:left; }
+.save-item .lbl{ font-size:.72rem; opacity:.72; text-transform:uppercase; letter-spacing:.06em; }
+.save-item .val{ font-family:var(--font); font-size:1.7rem; font-weight:800; margin-top:2px; }
+
+/* ══ PAGE HEADER ══ */
+.page-head{ margin:0 0 4px; }
+.page-head .ttl{ font-family:var(--font); font-weight:800; font-size:1.6rem;
+  letter-spacing:-.03em; color:var(--navy-800); }
+.page-head .sub{ color:var(--muted); font-size:.9rem; }
+
+/* ══ FILE UPLOADER ══ */
+[data-testid="stFileUploader"]{ background:var(--accent-light);
+  border:1px solid var(--border-strong); border-radius:12px; padding:10px;
+  transition:border-color .18s var(--ease); }
+[data-testid="stFileUploader"]:hover{ border-color:var(--accent); }
+[data-testid="stFileUploaderDropzone"]{
+  background:var(--surface) !important; border:1px dashed var(--border-strong) !important;
+  border-radius:10px !important; min-height:64px !important;
+  display:flex !important; align-items:center !important; gap:14px !important;
+  flex-wrap:nowrap !important; padding:10px 16px !important;
+}
+/* botón "Browse files" — evitar texto encimado */
+[data-testid="stFileUploader"] button{
+  letter-spacing:normal !important; white-space:nowrap !important;
+  font-weight:600 !important; min-width:max-content !important; flex:none !important;
+}
+[data-testid="stFileUploader"] button > *{ overflow:visible !important; }
+[data-testid="stFileUploaderDropzoneInstructions"]{ flex:1 1 auto !important; }
+
+/* ══ TOASTS ══ */
+@keyframes toast-in{ from{opacity:0; transform:translateY(18px) scale(.96);}
+  to{opacity:1; transform:translateY(0) scale(1);} }
+.toast{ position:fixed; bottom:26px; right:26px; padding:14px 20px;
+  border-radius:12px; font-family:var(--font); font-weight:600; font-size:.86rem;
+  box-shadow:var(--shadow-lg); animation:toast-in .3s var(--ease) both;
+  z-index:9999; max-width:340px; background:var(--surface); }
+.toast-success{ border-left:4px solid var(--green); color:var(--green); }
+.toast-error  { border-left:4px solid var(--red);   color:var(--red); }
+.toast-info   { border-left:4px solid var(--accent); color:var(--accent); }
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:6px; }
+::-webkit-scrollbar-thumb:hover{ background:var(--blue-300); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -202,13 +373,85 @@ for k, v in {
         st.session_state[k] = v
 
 
+# ── Toast helper (notificación flotante animada) ─────────────────────────────
+def toast(msg: str, kind: str = "success"):
+    st.markdown(f'<div class="toast toast-{kind}">{msg}</div>', unsafe_allow_html=True)
+
+
+def _stat_row(color: str, label: str, value: int) -> str:
+    """Fila de estado del sidebar: punto de color + etiqueta + conteo (sin emojis)."""
+    return (
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0">'
+        f'  <span style="color:#C8D9EC;font-size:.82rem">'
+        f'    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;'
+        f'      background:{color};margin-right:8px"></span>{label}</span>'
+        f'  <span style="color:#fff;font-weight:700;font-size:.9rem">{value}</span>'
+        '</div>'
+    )
+
+
+# ── Auto-carga del dataset principal al iniciar ──────────────────────────────
+# Doble caché: en disco (entre arranques) + en memoria (entre reruns/refrescos).
+# 1er arranque ~7 s (lee 24 PDFs una vez) → guarda en disco → siguientes arranques ~1-2 s.
+import pickle as _pickle, hashlib as _hashlib
+_DS_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cache")
+
+@st.cache_data(show_spinner=False)
+def _cargar_dataset(excel_path: str, docs_folder: str):
+    try:
+        sig = f"{excel_path}|{os.path.getmtime(excel_path)}|{os.path.getsize(excel_path)}"
+        key = _hashlib.md5(sig.encode()).hexdigest()[:12]
+        cache_file = os.path.join(_DS_CACHE_DIR, f"ds_{key}.pkl")
+    except Exception:
+        cache_file = None
+    # Cargar de disco si existe (rápido)
+    if cache_file and os.path.exists(cache_file):
+        try:
+            with open(cache_file, "rb") as f:
+                return _pickle.load(f)
+        except Exception:
+            pass
+    # Calcular y persistir
+    sheets  = load_excel(excel_path)
+    pdf_map = map_pdfs(docs_folder)
+    scores  = calculate_scores_batch(sheets, pdf_map)
+    if cache_file:
+        try:
+            os.makedirs(_DS_CACHE_DIR, exist_ok=True)
+            with open(cache_file, "wb") as f:
+                _pickle.dump((sheets, pdf_map, scores), f)
+        except Exception:
+            pass
+    return sheets, pdf_map, scores
+
+if not st.session_state.data_loaded:
+    _t_ini = __import__("time").time()
+    _ph = st.empty()
+    _ph.markdown(
+        '<div class="card-azul">Inicializando FRAUDIA · cargando y puntuando siniestros…</div>',
+        unsafe_allow_html=True,
+    )
+    try:
+        _sheets, _pdf_map, _scores = _cargar_dataset(DEFAULT_EXCEL, DEFAULT_DOCS)
+        st.session_state.update(
+            sheets=_sheets, pdf_map=_pdf_map,
+            scores_df=_scores, data_loaded=True,
+        )
+        _ph.empty()
+        toast(f"Sistema listo en {__import__('time').time()-_t_ini:.1f}s · {len(_scores)} siniestros", "success")
+    except Exception as _e:
+        st.session_state.data_loaded = False
+        _ph.empty()
+        toast("No se pudo inicializar el dataset", "error")
+
+
 # ── Modal de Coincidencias (Diálogo Streamlit) ───────────────────────────────
-@st.dialog("🔍 Detalles de la Validación Cruzada", width="large")
+@st.dialog("Detalles de la Validación Cruzada", width="large")
 def mostrar_modal_coincidencia(match_data: dict, row: dict, all_pdf_fields: dict):
     campo_origen = match_data.get("campo", "N/D")
     sin_id = row.get("ID Siniestro", "N/D")
     
-    st.markdown(f"### 📋 Expediente del Siniestro: **{sin_id}**")
+    st.markdown(f"### Expediente del Siniestro: **{sin_id}**")
     st.markdown("Comparativa detallada de campos extraídos vs Base de Datos (Excel):")
     st.markdown("---")
 
@@ -239,28 +482,28 @@ def mostrar_modal_coincidencia(match_data: dict, row: dict, all_pdf_fields: dict
     # Crear una hermosa tabla comparativa
     comparison_data = [
         {
-            "Campo": "🚗 Placa Vehículo",
+            "Campo": "Placa Vehículo",
             "Excel (Base de Datos)": str(ex_placa),
             "Documentos (PDF)": str(pdf_placa),
-            "Estado": "🟩 Coincide" if str(ex_placa).strip().upper() == str(pdf_placa).strip().upper() and ex_placa != "N/D" else "⬜ No Cruzado" if pdf_placa == "N/D" else "🟥 Discrepancia"
+            "Estado": "Coincide" if str(ex_placa).strip().upper() == str(pdf_placa).strip().upper() and ex_placa != "N/D" else "No Cruzado" if pdf_placa == "N/D" else "Discrepancia"
         },
         {
-            "Campo": "💰 Monto Reclamado",
+            "Campo": "Monto Reclamado",
             "Excel (Base de Datos)": str(ex_monto),
             "Documentos (PDF)": str(pdf_monto),
-            "Estado": "🟩 Coincide" if str(ex_monto) in str(pdf_monto) and ex_monto != "N/D" else "⬜ No Cruzado" if pdf_monto == "N/D" else "🟥 Discrepancia"
+            "Estado": "Coincide" if str(ex_monto) in str(pdf_monto) and ex_monto != "N/D" else "No Cruzado" if pdf_monto == "N/D" else "Discrepancia"
         },
         {
-            "Campo": "📅 Fecha del Evento",
+            "Campo": "Fecha del Evento",
             "Excel (Base de Datos)": str(ex_fecha),
             "Documentos (PDF)": str(pdf_fecha),
-            "Estado": "🟩 Coincide" if str(ex_fecha) in str(pdf_fecha) and ex_fecha != "N/D" else "⬜ No Cruzado" if pdf_fecha == "N/D" else "🟥 Discrepancia"
+            "Estado": "Coincide" if str(ex_fecha) in str(pdf_fecha) and ex_fecha != "N/D" else "No Cruzado" if pdf_fecha == "N/D" else "Discrepancia"
         },
         {
-            "Campo": "👤 Titular / Conductor",
+            "Campo": "Titular / Conductor",
             "Excel (Base de Datos)": str(ex_persona),
             "Documentos (PDF)": str(pdf_persona),
-            "Estado": "🟩 Coincide" if (str(ex_persona).lower() in str(pdf_persona).lower() or str(pdf_persona).lower() in str(ex_persona).lower()) and ex_persona != "N/D" else "⬜ No Cruzado" if pdf_persona == "N/D" else "🟨 Requiere Revisión"
+            "Estado": "Coincide" if (str(ex_persona).lower() in str(pdf_persona).lower() or str(pdf_persona).lower() in str(ex_persona).lower()) and ex_persona != "N/D" else "No Cruzado" if pdf_persona == "N/D" else "Requiere Revisión"
         }
     ]
 
@@ -268,7 +511,7 @@ def mostrar_modal_coincidencia(match_data: dict, row: dict, all_pdf_fields: dict
     st.dataframe(df_comp, use_container_width=True, hide_index=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    st.info(f"💡 **Origen de la alerta:** Hiciste clic en la validación de: **{campo_origen}** (Valor verificado: `{match_data.get('valor')}`)")
+    st.info(f"**Origen de la alerta:** Hiciste clic en la validación de: **{campo_origen}** (Valor verificado: `{match_data.get('valor')}`)")
     
     if st.button("Cerrar", use_container_width=True):
         st.rerun()
@@ -277,16 +520,31 @@ def mostrar_modal_coincidencia(match_data: dict, row: dict, all_pdf_fields: dict
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown(
-        '<div style="text-align:center;padding:10px 0">'
-        '<span style="font-size:1.8rem;font-weight:900;color:#1B4F8A">🔍 FRAUDIA</span><br>'
-        '<span style="font-size:.75rem;color:#5D6D7E">Detector Antifraude IA · hackIAthon 2026</span>'
+        '<div style="display:flex;align-items:center;gap:11px;padding:4px 2px 12px">'
+        '  <div style="width:42px;height:42px;border-radius:11px;flex:none;'
+        '       background:linear-gradient(135deg,#1A6FB5,#3E97DA);display:flex;'
+        '       align-items:center;justify-content:center;'
+        '       box-shadow:0 4px 14px rgba(26,111,181,.4)">'
+        '    <span style="color:#fff;font-weight:800;font-size:1.25rem">F</span>'
+        '  </div>'
+        '  <div style="line-height:1.15">'
+        '    <div style="font-weight:800;font-size:1.18rem;color:#fff;letter-spacing:-.01em">FRAUDIA</div>'
+        '    <div style="font-size:.68rem;color:#7E93AC;letter-spacing:.04em;text-transform:uppercase">'
+        '         Antifraude · IA</div>'
+        '  </div>'
         '</div>', unsafe_allow_html=True
     )
-    st.divider()
 
-    groq_key = st.text_input("🔑 Groq API Key", type="password",
+    # ── Menú de navegación lateral ────────────────────────────────────
+    _NAV = ["Dashboard", "Siniestro", "Proveedores", "Agente IA", "Modelo ML",
+            "Red Relacional", "Cargar Documento", "Ética", "Manual"]
+    st.radio("Navegación", options=_NAV, key="nav_page", label_visibility="collapsed")
+
+    st.divider()
+    st.markdown('<div class="nav-section">Configuración</div>', unsafe_allow_html=True)
+    groq_key = st.text_input("Groq API Key", type="password",
                               value=os.getenv("GROQ_API_KEY", ""),
-                              help="Gratis en console.groq.com")
+                              help="Opcional — gratis en console.groq.com. Sin clave, el agente opera en modo retrieval-only.")
     st.divider()
     import os
     dataset_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "dataset")
@@ -297,16 +555,16 @@ with st.sidebar:
         
     # Mapeo de nombres descriptivos
     display_names = {
-        "Evento Datasets_Sinteticos_Fraude_500_v2.xlsx": "📊 Dataset Principal (500 Siniestros)",
-        "dataset_ficticio_prueba.xlsx": "🧪 Dataset Ficticio de Prueba (SIN-9999)"
+        "Evento Datasets_Sinteticos_Fraude_500_v2.xlsx": "Dataset Principal (500 Siniestros)",
+        "dataset_ficticio_prueba.xlsx": "Dataset Ficticio de Prueba (SIN-9999)"
     }
     
     if not excel_files:
         excel_files = [os.path.basename(DEFAULT_EXCEL)]
         
-    options = [display_names.get(f, f"📁 {f}") for f in excel_files]
+    options = [display_names.get(f, f"{f}") for f in excel_files]
     
-    st.markdown("**📂 Seleccionar Dataset Excel**")
+    st.markdown("**Dataset de siniestros**")
     selected_display = st.selectbox(
         "Excel del Siniestro",
         options,
@@ -315,7 +573,7 @@ with st.sidebar:
     )
     
     # Permitir agregar nueva fuente (Excel)
-    with st.expander("📤 Subir nueva fuente (Excel)", expanded=False):
+    with st.expander("Subir nueva fuente (Excel)", expanded=False):
         uploaded_file = st.file_uploader(
             "Selecciona un archivo Excel",
             type=["xlsx", "xls"],
@@ -334,59 +592,53 @@ with st.sidebar:
                 st.error(f"Error al guardar: {e}")
     
     # Resolver ruta del archivo seleccionado
-    reverse_map = {display_names.get(f, f"📁 {f}"): f for f in excel_files}
+    reverse_map = {display_names.get(f, f"{f}"): f for f in excel_files}
     selected_file = reverse_map.get(selected_display, selected_display)
     excel_path = os.path.join(dataset_dir, selected_file)
     
     docs_folder = DEFAULT_DOCS
 
-    if st.button("🚀 Cargar Dataset", use_container_width=True, type="primary"):
+    if st.button("Cargar Dataset", use_container_width=True, type="primary"):
         try:
             with st.status("Procesando dataset…", expanded=True) as status:
-                st.write("📂 Leyendo Excel (5 hojas, 500 siniestros)…")
+                st.write("Leyendo Excel (5 hojas, 500 siniestros)…")
                 sheets = load_excel(excel_path)
 
-                st.write(f"📄 Escaneando carpetas de PDFs…")
+                st.write(f"Escaneando carpetas de PDFs…")
                 pdf_map = map_pdfs(docs_folder)
                 st.write(f"   → {len(pdf_map)} siniestros con documentos vinculados")
 
-                st.write("🎯 Calculando scores de riesgo + validación cruzada de PDFs…")
+                st.write("Calculando scores de riesgo + validación cruzada de PDFs…")
                 scores = calculate_scores_batch(sheets, pdf_map)
 
                 st.session_state.update(
                     sheets=sheets, pdf_map=pdf_map,
                     scores_df=scores, data_loaded=True,
+                    rag_ready=False, rag=None,
                 )
                 rj = (scores.Nivel=="ROJO").sum()
                 am = (scores.Nivel=="AMARILLO").sum()
                 vr = (scores.Nivel=="VERDE").sum()
-                st.write(f"✅ Listo: 🔴 {rj} · 🟡 {am} · 🟢 {vr}")
-                status.update(label=f"✅ Dataset cargado — {len(sheets.get('1_Siniestros', []))} siniestros",
+                st.write(f"Listo: {rj} · {am} · {vr}")
+                status.update(label=f"Dataset cargado — {len(sheets.get('1_Siniestros', []))} siniestros",
                               state="complete", expanded=False)
+            toast(f"Dataset cargado · {rj+am+vr} siniestros analizados", "success")
         except Exception as e:
             st.error(f"Error: {e}")
+            toast("No se pudo cargar el dataset", "error")
 
-    # Auto-activación del Agente IA: si hay dataset, construir el RAG automáticamente
-    # (funciona en modo retrieval-only sin API Key, o completo con Groq si hay key)
-    if st.session_state.data_loaded and not st.session_state.rag_ready:
+    # El índice RAG se construye SOLO cuando el usuario entra a "Agente IA"
+    # (evita penalizar el arranque del Dashboard con la carga del modelo de embeddings).
+    _en_agente = st.session_state.get("nav_page") == "Agente IA"
+    if st.session_state.data_loaded and not st.session_state.rag_ready and _en_agente:
         try:
-            # Verificar si existe caché en disco
             import os
             cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cache")
             has_cache = os.path.exists(cache_dir) and any(f.endswith(".faiss") for f in os.listdir(cache_dir)) if os.path.exists(cache_dir) else False
+            label_inicial = "Cargando índice del agente…" if has_cache else "Construyendo índice del agente (primera vez, ~30s)…"
 
-            label_inicial = "⚡ Cargando caché del RAG…" if has_cache else "🧠 Construyendo índice RAG (primera vez, ~30s)…"
-
-            with st.status(label_inicial, expanded=True) as rag_status:
+            with st.status(label_inicial, expanded=False) as rag_status:
                 from src.rag_engine import RAGEngine
-
-                if has_cache:
-                    st.write("⚡ Caché en disco detectado — carga instantánea")
-                else:
-                    st.write("📥 Descargando modelo de embeddings (1ra vez, ~470MB)…")
-                    st.write("⏳ Esto solo pasa la primera vez. Después es instantáneo.")
-                    st.write("📚 Indexando 500 siniestros + 25 reglas RF + 14 señales…")
-                    st.write("🔢 Vectorizando con FAISS…")
 
                 pdf_texts: dict = {}
                 for sid, docs in st.session_state.pdf_map.items():
@@ -400,14 +652,11 @@ with st.sidebar:
                 st.session_state.rag = rag
                 st.session_state.rag_ready = True
                 mode_label = "modo completo (LLM)" if groq_key else "modo retrieval-only"
-                st.write(f"✅ Listo — {mode_label}")
-                rag_status.update(
-                    label=f"✅ Agente IA activo ({mode_label})",
-                    state="complete", expanded=False,
-                )
+                rag_status.update(label=f"Agente IA activo ({mode_label})",
+                                  state="complete", expanded=False)
                 st.rerun()
         except Exception as e:
-            st.error(f"Error activando RAG: {e}")
+            st.error(f"Error activando el agente: {e}")
 
     # Si la clave API de Groq en la interfaz cambió con respecto al RAG cargado, actualizarlo
     if st.session_state.rag_ready and st.session_state.rag is not None:
@@ -422,63 +671,79 @@ with st.sidebar:
                 new_rag.chunks    = current_rag.chunks
                 new_rag.metadata  = current_rag.metadata
                 st.session_state.rag = new_rag
-                st.success("🚀 Agente RAG actualizado dinámicamente con la nueva clave de Groq.")
+                st.success("Agente RAG actualizado dinámicamente con la nueva clave de Groq.")
             except Exception as e:
                 st.error(f"Error actualizando el Agente RAG: {e}")
 
     st.divider()
     if st.session_state.data_loaded:
         df_s = st.session_state.scores_df
+        _rj = int((df_s.Nivel=="ROJO").sum())
+        _am = int((df_s.Nivel=="AMARILLO").sum())
+        _vr = int((df_s.Nivel=="VERDE").sum())
+        st.markdown('<div class="nav-section">Estado del análisis</div>', unsafe_allow_html=True)
         st.markdown(
-            f'<div class="kpi-box" style="margin-bottom:6px">'
-            f'<span style="color:#E74C3C;font-size:1.3rem;font-weight:900">🔴 {(df_s.Nivel=="ROJO").sum()}</span>'
-            f'&nbsp;&nbsp;<span style="color:#F39C12;font-size:1.3rem;font-weight:900">🟡 {(df_s.Nivel=="AMARILLO").sum()}</span>'
-            f'&nbsp;&nbsp;<span style="color:#27AE60;font-size:1.3rem;font-weight:900">🟢 {(df_s.Nivel=="VERDE").sum()}</span>'
-            f'</div>', unsafe_allow_html=True
+            '<div style="background:var(--bg-sidebar-2);border:1px solid rgba(255,255,255,.08);'
+            'border-radius:10px;padding:10px 12px">'
+            f'{_stat_row("#C0392B","Crítico", _rj)}'
+            f'{_stat_row("#B7770D","Revisión", _am)}'
+            f'{_stat_row("#0E7D6E","Bajo riesgo", _vr)}'
+            '</div>', unsafe_allow_html=True
         )
     if st.session_state.rag_ready:
-        st.markdown('<div class="card-azul">🤖 Agente IA activo</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div style="margin-top:8px;font-size:.78rem;color:#7FD6B0">'
+            '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;'
+            'background:#0E7D6E;margin-right:6px"></span>Agente IA activo</div>',
+            unsafe_allow_html=True,
+        )
 
 
-# ── Header ────────────────────────────────────────────────────────────────────
-col_h1, col_h2 = st.columns([3, 1])
+# ── Router + encabezado de página dinámico ──────────────────────────────────
+PAGINA = st.session_state.get("nav_page", "Dashboard")
+_PAGE_SUB = {
+    "Dashboard":        "Panel ejecutivo · Aseguradora del Sur",
+    "Siniestro":        "Expediente 360° y validación cruzada de documentos",
+    "Proveedores":      "Concentración de alertas y lista restrictiva",
+    "Agente IA":        "Consultas en lenguaje natural sobre los casos",
+    "Modelo ML":        "Random Forest · Isolation Forest · Narrativas clonadas",
+    "Red Relacional":   "Grafo de asegurados, proveedores y siniestros",
+    "Cargar Documento": "Valida un PDF o Excel contra el dataset en tiempo real",
+    "Ética":            "Limitaciones, análisis de sesgo y revisión humana",
+    "Manual":           "Guía interactiva de uso del sistema",
+}
+col_h1, col_h2 = st.columns([3, 1.1])
 with col_h1:
     st.markdown(
-        '<h1 style="margin-bottom:0">🔍 FRAUDIA</h1>'
-        '<p style="color:#5D6D7E;margin-top:0">Detector de Posibles Fraudes en Siniestros · '
-        'Aseguradora del Sur · hackIAthon 2026</p>',
+        f'<div class="page-head"><div class="ttl">{PAGINA}</div>'
+        f'<div class="sub">{_PAGE_SUB.get(PAGINA, "")}</div></div>',
         unsafe_allow_html=True,
     )
 with col_h2:
-    st.markdown('<div style="padding-top:20px;text-align:right;color:#5D6D7E;font-size:.8rem">'
-                'Los resultados son alertas de revisión.<br>No sustituyen el análisis humano.</div>',
-                unsafe_allow_html=True)
+    st.markdown(
+        '<div style="text-align:right;padding-top:4px">'
+        '  <span style="display:inline-block;background:var(--accent-light);color:var(--accent);'
+        '        border:1px solid var(--border-strong);border-radius:999px;padding:4px 12px;'
+        '        font-size:.72rem;font-weight:700;letter-spacing:.02em">hackIAthon 2026</span>'
+        '  <div style="color:var(--faint);font-size:.72rem;margin-top:8px;line-height:1.4">'
+        '       Genera alertas de revisión.<br>No sustituye el análisis humano.</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
 st.divider()
-
-TABS = st.tabs([
-    "📘 Manual",
-    "📊 Dashboard",
-    "🔍 Siniestro",
-    "📄 Cargar Documento",
-    "🤖 Agente IA",
-    "🧠 Modelo ML",
-    "🕸️ Red Relacional",
-    "⚖️ Ética y Limitaciones",
-    "🏢 Proveedores",
-])
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 0 — MANUAL DE USUARIO INTERACTIVO
 # ═══════════════════════════════════════════════════════════════════════════════
-with TABS[0]:
+if PAGINA == "Manual":
     # Banner de bienvenida
     st.markdown("""
     <div style="background:linear-gradient(135deg,#1B4F8A,#2980B9);color:white;
                 border-radius:14px;padding:24px 30px;margin-bottom:18px;
                 box-shadow:0 4px 18px rgba(27,79,138,0.25)">
       <h2 style="color:white !important;margin:0;font-size:1.6rem">
-        👋 Bienvenido a FRAUDIA — Detector de Posibles Fraudes
+        Bienvenido a FRAUDIA — Detector de Posibles Fraudes
       </h2>
       <p style="margin:8px 0 0 0;font-size:1rem;opacity:.95">
         Este manual te enseñará cómo usar el sistema en menos de 5 minutos.
@@ -488,16 +753,16 @@ with TABS[0]:
     """, unsafe_allow_html=True)
 
     man_tab1, man_tab2, man_tab3, man_tab4, man_tab5 = st.tabs([
-        "🚀 Empezar en 3 pasos",
-        "🗂️ Qué hace cada pantalla",
-        "📤 Cómo subir archivos",
-        "📖 Glosario",
-        "❓ Preguntas frecuentes",
+        "Empezar en 3 pasos",
+        "Qué hace cada pantalla",
+        "Cómo subir archivos",
+        "Glosario",
+        "Preguntas frecuentes",
     ])
 
     # ── 1. EMPEZAR EN 3 PASOS ────────────────────────────────────────
     with man_tab1:
-        st.markdown("### 🚀 Empezar en 3 pasos")
+        st.markdown("### Empezar en 3 pasos")
         st.markdown("Sigue estos 3 pasos en orden para tener el sistema listo:")
         st.markdown("")
 
@@ -511,16 +776,16 @@ with TABS[0]:
             <h3 style="color:#1B4F8A !important;margin:0">Carga el dataset</h3>
           </div>
           <p style="margin:0;color:#1A3A5C">
-            En el panel <b>lateral izquierdo</b> haz clic en el botón azul <b>🚀 Cargar Dataset</b>.<br>
+            En el panel <b>lateral izquierdo</b> haz clic en el botón azul <b>Cargar Dataset</b>.<br>
             El sistema leerá automáticamente:
           </p>
           <ul style="margin:6px 0 0 0;color:#1A3A5C">
-            <li>📊 El Excel con <b>500 siniestros</b> (5 hojas)</li>
-            <li>📄 Los <b>24 PDFs</b> de Partes Policiales, Declaraciones y Facturas</li>
-            <li>🎯 Calcula <b>scores de riesgo</b> con validación cruzada</li>
+            <li>El Excel con <b>500 siniestros</b> (5 hojas)</li>
+            <li>Los <b>24 PDFs</b> de Partes Policiales, Declaraciones y Facturas</li>
+            <li>Calcula <b>scores de riesgo</b> con validación cruzada</li>
           </ul>
           <p style="margin:8px 0 0 0;color:#5D6D7E;font-size:.85rem">
-            ⏱️ Tarda unos <b>10–12 segundos</b> la primera vez.
+            ⏱Tarda unos <b>10–12 segundos</b> la primera vez.
           </p>
         </div>
         """, unsafe_allow_html=True)
@@ -540,11 +805,11 @@ with TABS[0]:
           <ol style="margin:6px 0 0 0;color:#1A3A5C">
             <li>Ve a <a href="https://console.groq.com" target="_blank">console.groq.com</a> y crea una cuenta gratis</li>
             <li>Copia tu API Key</li>
-            <li>Pégala en el campo <b>🔑 Groq API Key</b> del panel lateral</li>
-            <li>Haz clic en <b>🧠 Activar Agente IA</b></li>
+            <li>Pégala en el campo <b>Groq API Key</b> del panel lateral</li>
+            <li>Haz clic en <b>Activar Agente IA</b></li>
           </ol>
           <p style="margin:8px 0 0 0;color:#5D6D7E;font-size:.85rem">
-            ⏱️ Tarda unos <b>30–60 segundos</b> mientras construye el índice vectorial.
+            ⏱Tarda unos <b>30–60 segundos</b> mientras construye el índice vectorial.
           </p>
         </div>
         """, unsafe_allow_html=True)
@@ -562,38 +827,38 @@ with TABS[0]:
             Navega por las pestañas de arriba. Te recomendamos este orden:
           </p>
           <ol style="margin:6px 0 0 0;color:#1A3A5C">
-            <li><b>📊 Dashboard</b> — vista general de los 500 siniestros</li>
-            <li><b>🔍 Siniestro</b> — analiza un caso específico (prueba con <code>SIN-0005</code>)</li>
-            <li><b>🤖 Agente IA</b> — haz preguntas</li>
-            <li><b>📄 Cargar Documento</b> — sube un PDF nuevo para validar</li>
+            <li><b>Dashboard</b> — vista general de los 500 siniestros</li>
+            <li><b>Siniestro</b> — analiza un caso específico (prueba con <code>SIN-0005</code>)</li>
+            <li><b>Agente IA</b> — haz preguntas</li>
+            <li><b>Cargar Documento</b> — sube un PDF nuevo para validar</li>
           </ol>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("### 🎯 ¿Listo? Recomendación")
-        st.info("**Empieza por la pestaña 📊 Dashboard.** Es el panel general y desde ahí entiendes el contexto antes de meterte en los detalles.")
+        st.markdown("### ¿Listo? Recomendación")
+        st.info("**Empieza por la pestaña Dashboard.** Es el panel general y desde ahí entiendes el contexto antes de meterte en los detalles.")
 
     # ── 2. QUÉ HACE CADA PANTALLA ────────────────────────────────────
     with man_tab2:
-        st.markdown("### 🗂️ Qué hace cada pantalla")
+        st.markdown("### Qué hace cada pantalla")
         st.markdown("Cada pestaña tiene un propósito específico. Esta es la guía completa:")
         st.markdown("")
 
         pantallas = [
-            ("📊", "Dashboard",
+            ("", "Dashboard",
              "Vista general del riesgo de toda la cartera de siniestros.",
              [
-                "**KPIs** — total de siniestros, conteo por nivel (🔴🟡🟢)",
+                "**KPIs** — total de siniestros, conteo por nivel ()",
                 "**Simulación de Ahorro** — cuánto dinero se ahorraría revisando los casos críticos",
                 "**Tabla filtrable** — busca por ramo, sucursal, ID o nivel de riesgo",
                 "**Mapa de Ecuador** — geolocalización de alertas por ciudad",
                 "**Ranking de ciudades** — top de ciudades por nivel de riesgo",
                 "**Exportar CSV/PDF** — descarga reportes para auditoría",
              ],
-             "💡 Tip: usa los filtros para enfocarte en un ramo específico (ej: solo Vehículos)."),
+             "Tip: usa los filtros para enfocarte en un ramo específico (ej: solo Vehículos)."),
 
-            ("🔍", "Siniestro",
+            ("", "Siniestro",
              "Análisis profundo de un siniestro individual.",
              [
                 "**Score detallado** con barra de progreso y desglose por señal",
@@ -603,9 +868,9 @@ with TABS[0]:
                 "**Reglas críticas activadas** (RF-01 a RF-07)",
                 "**Acción recomendada** según el nivel de riesgo",
              ],
-             "💡 Tip: prueba con SIN-0005 — verás las 5 inconsistencias detectadas (nombre diferente, RUC inválido, etc.)."),
+             "Tip: prueba con SIN-0005 — verás las 5 inconsistencias detectadas (nombre diferente, RUC inválido, etc.)."),
 
-            ("📄", "Cargar Documento",
+            ("", "Cargar Documento",
              "Sube un PDF o Excel nuevo para validarlo contra el dataset.",
              [
                 "**PDF**: el sistema detecta el tipo (Parte Policial, Declaración o Factura)",
@@ -614,9 +879,9 @@ with TABS[0]:
                 "Recalcula el score en tiempo real con la nueva información",
                 "**Excel**: valida la estructura de las 5 hojas requeridas",
              ],
-             "💡 Tip: esta es la pantalla para la demo en vivo — el jurado puede subir un PDF y ver la magia."),
+             "Tip: esta es la pantalla para la demo en vivo — el jurado puede subir un PDF y ver la magia."),
 
-            ("🤖", "Agente IA",
+            ("", "Agente IA",
              "Chat conversacional con RAG (Retrieval Augmented Generation).",
              [
                 "Responde preguntas en lenguaje natural usando los datos reales",
@@ -626,20 +891,20 @@ with TABS[0]:
                 "Cita IDs de siniestros específicos en sus respuestas",
                 "Mantiene el historial del chat",
              ],
-             "💡 Tip: empieza con la pregunta '¿Cuáles son los 10 siniestros con mayor riesgo?'"),
+             "Tip: empieza con la pregunta '¿Cuáles son los 10 siniestros con mayor riesgo?'"),
 
-            ("🧠", "Modelo ML",
+            ("", "Modelo ML",
              "Tres modelos de Machine Learning con vistas comparativas.",
              [
-                "**🌲 Random Forest Supervisado** — predicción con validación cruzada 5-fold",
+                "**Random Forest Supervisado** — predicción con validación cruzada 5-fold",
                 "Métricas: AUC, F1, Precisión, Recall, Matriz de Confusión",
-                "**🔮 Isolation Forest** — detección de anomalías no supervisada",
-                "**🕸️ Narrativas Clonadas** — agrupa siniestros con descripciones idénticas (posibles anillos de fraude)",
+                "**Isolation Forest** — detección de anomalías no supervisada",
+                "**Narrativas Clonadas** — agrupa siniestros con descripciones idénticas (posibles anillos de fraude)",
                 "**Score Combinado** = 50% Reglas + 25% IF + 25% RF",
              ],
-             "💡 Tip: en Narrativas Clonadas, ajusta el umbral de similitud para ver más o menos grupos."),
+             "Tip: en Narrativas Clonadas, ajusta el umbral de similitud para ver más o menos grupos."),
 
-            ("🕸️", "Red Relacional",
+            ("", "Red Relacional",
              "Grafo interactivo de relaciones entre Asegurados ↔ Siniestros ↔ Proveedores.",
              [
                 "Cada nodo es un asegurado, siniestro o proveedor",
@@ -647,9 +912,9 @@ with TABS[0]:
                 "Los nodos se colorean por nivel de riesgo",
                 "Filtra por nivel para enfocarte solo en casos críticos",
              ],
-             "💡 Tip: busca clusters densos — pueden indicar redes de fraude coordinado."),
+             "Tip: busca clusters densos — pueden indicar redes de fraude coordinado."),
 
-            ("⚖️", "Ética y Limitaciones",
+            ("", "Ética y Limitaciones",
              "Declaración de uso responsable y análisis de sesgo.",
              [
                 "Qué está permitido y qué NO está permitido hacer con el sistema",
@@ -657,9 +922,9 @@ with TABS[0]:
                 "**Análisis de sesgo** por ramo y por sucursal",
                 "**Flujo de revisión humana** obligatorio",
              ],
-             "💡 Tip: muestra esta pantalla al jurado — es lo que diferencia un sistema ético de uno no ético."),
+             "Tip: muestra esta pantalla al jurado — es lo que diferencia un sistema ético de uno no ético."),
 
-            ("🏢", "Proveedores",
+            ("", "Proveedores",
              "Ranking de proveedores por concentración de alertas.",
              [
                 "Identifica talleres y clínicas con más siniestros sospechosos",
@@ -667,7 +932,7 @@ with TABS[0]:
                 "Filtra por tipo: Taller, Clínica, Perito",
                 "Exporta el ranking a CSV",
              ],
-             "💡 Tip: un proveedor con muchas alertas rojas es un foco de investigación prioritario."),
+             "Tip: un proveedor con muchas alertas rojas es un foco de investigación prioritario."),
         ]
 
         for icon, title, subtitle, features, tip in pantallas:
@@ -679,7 +944,7 @@ with TABS[0]:
 
     # ── 3. CÓMO SUBIR ARCHIVOS ──────────────────────────────────────
     with man_tab3:
-        st.markdown("### 📤 Cómo subir archivos al sistema")
+        st.markdown("### Cómo subir archivos al sistema")
         st.markdown("Hay **dos lugares** donde puedes cargar información:")
         st.markdown("")
 
@@ -689,7 +954,7 @@ with TABS[0]:
             st.markdown("""
             <div style="background:#EBF5FB;border:2px solid #2980B9;border-radius:12px;
                         padding:18px 22px;height:100%">
-              <h4 style="color:#1B4F8A !important;margin:0 0 10px 0">🏠 1. Sidebar — Cargar Dataset</h4>
+              <h4 style="color:#1B4F8A !important;margin:0 0 10px 0">1. Sidebar — Cargar Dataset</h4>
               <p style="color:#1A3A5C;margin:0">Para cambiar el <b>dataset completo</b> que usa toda la app.</p>
               <p style="color:#1A3A5C;margin:8px 0 0 0"><b>Cuándo usar:</b></p>
               <ul style="color:#1A3A5C;margin:4px 0 0 0">
@@ -699,7 +964,7 @@ with TABS[0]:
               <p style="color:#1A3A5C;margin:12px 0 4px 0"><b>Cómo:</b></p>
               <ol style="color:#1A3A5C;margin:0">
                 <li>En el sidebar edita las rutas</li>
-                <li>Clic en <b>🚀 Cargar Dataset</b></li>
+                <li>Clic en <b>Cargar Dataset</b></li>
               </ol>
             </div>
             """, unsafe_allow_html=True)
@@ -708,7 +973,7 @@ with TABS[0]:
             st.markdown("""
             <div style="background:#F0FDF4;border:2px solid #27AE60;border-radius:12px;
                         padding:18px 22px;height:100%">
-              <h4 style="color:#1B4F8A !important;margin:0 0 10px 0">📄 2. Tab Cargar Documento</h4>
+              <h4 style="color:#1B4F8A !important;margin:0 0 10px 0">2. Tab Cargar Documento</h4>
               <p style="color:#1A3A5C;margin:0">Para subir <b>un solo archivo</b> y validarlo contra el dataset.</p>
               <p style="color:#1A3A5C;margin:8px 0 0 0"><b>Cuándo usar:</b></p>
               <ul style="color:#1A3A5C;margin:4px 0 0 0">
@@ -718,7 +983,7 @@ with TABS[0]:
               </ul>
               <p style="color:#1A3A5C;margin:12px 0 4px 0"><b>Cómo:</b></p>
               <ol style="color:#1A3A5C;margin:0">
-                <li>Ve al tab <b>📄 Cargar Documento</b></li>
+                <li>Ve al tab <b>Cargar Documento</b></li>
                 <li>Elige tipo: PDF o Excel</li>
                 <li>Arrastra el archivo o haz clic para buscar</li>
               </ol>
@@ -726,7 +991,7 @@ with TABS[0]:
             """, unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("### 📑 Tipos de archivos soportados")
+        st.markdown("### Tipos de archivos soportados")
 
         st.markdown("""
         <table style="width:100%;border-collapse:collapse">
@@ -736,22 +1001,22 @@ with TABS[0]:
             <th style="padding:10px;text-align:left">Qué detecta el sistema</th>
           </tr>
           <tr style="background:#F8FBFF;color:#1A3A5C">
-            <td style="padding:10px"><b>📋 Parte Policial</b></td>
+            <td style="padding:10px"><b>Parte Policial</b></td>
             <td style="padding:10px"><code>PP_SIN-XXXX_DOC-YYYY.pdf</code></td>
             <td style="padding:10px">Placa, marca, modelo, fecha hecho, fecha elaboración, hora, conductor, observaciones</td>
           </tr>
           <tr style="background:white;color:#1A3A5C">
-            <td style="padding:10px"><b>📝 Declaración Accidente</b></td>
+            <td style="padding:10px"><b>Declaración Accidente</b></td>
             <td style="padding:10px"><code>DA_SIN-XXXX_DOC-YYYY.pdf</code></td>
             <td style="padding:10px">Asegurado, póliza, descripción, datos del tercero, intervención policial</td>
           </tr>
           <tr style="background:#F8FBFF;color:#1A3A5C">
-            <td style="padding:10px"><b>🧾 Factura</b></td>
+            <td style="padding:10px"><b>Factura</b></td>
             <td style="padding:10px"><code>Muestras_Facturas_Siniestros-SIN-XXXX.pdf</code></td>
             <td style="padding:10px">Cliente, placa, RUC del taller, fecha factura, descripción servicio, monto total</td>
           </tr>
           <tr style="background:white;color:#1A3A5C">
-            <td style="padding:10px"><b>📊 Excel del Dataset</b></td>
+            <td style="padding:10px"><b>Excel del Dataset</b></td>
             <td style="padding:10px"><code>.xlsx</code> con 5 hojas</td>
             <td style="padding:10px">1_Siniestros, 2_Pólizas, 3_Asegurados, 4_Proveedores, 5_Documentos</td>
           </tr>
@@ -759,22 +1024,22 @@ with TABS[0]:
         """, unsafe_allow_html=True)
 
         st.markdown("")
-        st.success("✨ **El sistema detecta automáticamente el tipo de PDF** leyendo su contenido — no necesitas decirle qué es.")
+        st.success("**El sistema detecta automáticamente el tipo de PDF** leyendo su contenido — no necesitas decirle qué es.")
 
     # ── 4. GLOSARIO ──────────────────────────────────────────────────
     with man_tab4:
-        st.markdown("### 📖 Glosario de términos")
+        st.markdown("### Glosario de términos")
         st.markdown("Si nunca has trabajado en seguros, este glosario te ayudará a entender el sistema:")
         st.markdown("")
 
         terminos = [
-            ("🚦 Score / Semáforo",
+            ("Score / Semáforo",
              "Calificación de 0 a 100 del riesgo de fraude. Se traduce en colores:",
-             [("🟢 VERDE", "0–40 puntos", "Bajo riesgo — continuar flujo normal"),
-              ("🟡 AMARILLO", "41–75 puntos", "Riesgo medio — revisión documental"),
-              ("🔴 ROJO", "76–100 puntos", "Riesgo alto — escalar a Unidad Antifraude")]),
+             [("VERDE", "0–40 puntos", "Bajo riesgo — continuar flujo normal"),
+              ("AMARILLO", "41–75 puntos", "Riesgo medio — revisión documental"),
+              ("ROJO", "76–100 puntos", "Riesgo alto — escalar a Unidad Antifraude")]),
 
-            ("⚡ Reglas RF-01 a RF-07",
+            ("Reglas RF-01 a RF-07",
              "Las 7 reglas críticas del reto de la Aseguradora del Sur:",
              [("RF-01", "Cobertura Pérdida Total por Robo", "→ Rojo"),
               ("RF-02", "Evidencia de Adulteración Documental", "→ Rojo"),
@@ -784,21 +1049,21 @@ with TABS[0]:
               ("RF-06", "Demora Atípica en Denuncia de Robo (>4 días)", "→ Amarillo"),
               ("RF-07", "Narrativa Idéntica (Clonada)", "→ Amarillo")]),
 
-            ("🤖 RAG (Retrieval Augmented Generation)",
+            ("RAG (Retrieval Augmented Generation)",
              "Es la técnica que usa el Agente IA. Funciona así:",
-             [("1️⃣", "Chunking", "El sistema divide el dataset en fragmentos pequeños"),
-              ("2️⃣", "Embeddings", "Convierte cada fragmento en un vector numérico"),
-              ("3️⃣", "Retrieval", "Cuando preguntas algo, busca los fragmentos más relevantes"),
-              ("4️⃣", "Generation", "Le pasa esos fragmentos a Groq + Llama 3.1 para que responda")]),
+             [("1⃣", "Chunking", "El sistema divide el dataset en fragmentos pequeños"),
+              ("2⃣", "Embeddings", "Convierte cada fragmento en un vector numérico"),
+              ("3⃣", "Retrieval", "Cuando preguntas algo, busca los fragmentos más relevantes"),
+              ("4⃣", "Generation", "Le pasa esos fragmentos a Groq + Llama 3.1 para que responda")]),
 
-            ("🧠 Modelos de IA usados",
+            ("Modelos de IA usados",
              "FRAUDIA combina 3 enfoques de Machine Learning:",
-             [("📐 Reglas", "Lógica de negocio", "Implementa las 7 reglas críticas del reto"),
-              ("🌲 Random Forest", "Aprendizaje supervisado", "Aprende a predecir fraude usando etiquetas"),
-              ("🔮 Isolation Forest", "Detección de anomalías", "Encuentra casos estadísticamente raros sin etiquetas"),
-              ("💬 NLP (TF-IDF)", "Análisis de texto", "Detecta descripciones similares entre siniestros")]),
+             [("Reglas", "Lógica de negocio", "Implementa las 7 reglas críticas del reto"),
+              ("Random Forest", "Aprendizaje supervisado", "Aprende a predecir fraude usando etiquetas"),
+              ("Isolation Forest", "Detección de anomalías", "Encuentra casos estadísticamente raros sin etiquetas"),
+              ("NLP (TF-IDF)", "Análisis de texto", "Detecta descripciones similares entre siniestros")]),
 
-            ("📊 Términos del Excel",
+            ("Términos del Excel",
              "Las columnas más importantes del dataset:",
              [("ID Siniestro", "SIN-XXXX", "Identificador único del caso"),
               ("Cobertura", "Robo, Choque, …", "Tipo de evento reportado"),
@@ -826,7 +1091,7 @@ with TABS[0]:
 
     # ── 5. FAQ ───────────────────────────────────────────────────────
     with man_tab5:
-        st.markdown("### ❓ Preguntas frecuentes")
+        st.markdown("### Preguntas frecuentes")
         st.markdown("")
 
         faqs = [
@@ -840,13 +1105,13 @@ with TABS[0]:
              "Entre **10 y 12 segundos**. El sistema:\n- Lee el Excel con 500 siniestros (3 s)\n- Escanea las carpetas de PDFs (instante)\n- Lee y procesa los 24 PDFs (7 s)\n- Calcula scores con validación cruzada\n\nLas cargas posteriores son casi instantáneas gracias al caché."),
 
             ("¿Necesito la API Key de Groq para todo?",
-             "**No.** Solo el tab **🤖 Agente IA** requiere la API Key. Todas las demás pantallas (Dashboard, Siniestro, Cargar Documento, Modelo ML, etc.) funcionan sin ella."),
+             "**No.** Solo el tab **Agente IA** requiere la API Key. Todas las demás pantallas (Dashboard, Siniestro, Cargar Documento, Modelo ML, etc.) funcionan sin ella."),
 
             ("¿Qué tan confiable es el score de fraude?",
              "El score combina 3 fuentes:\n- **Reglas de negocio**: 50% — alta confiabilidad (basadas en el PDF del reto)\n- **Random Forest**: 25% — AUC ~0.62 con datos sintéticos (mejorable con datos reales)\n- **Isolation Forest**: 25% — detecta casos raros sin etiquetas\n\nLa tasa estimada de falsos positivos es **15–20%**, por eso siempre se requiere revisión humana."),
 
             ("¿Puedo subir mi propio Excel?",
-             "**Sí.** Ve al tab **📄 Cargar Documento → 📊 Excel**. El sistema validará que tenga las 5 hojas requeridas con las columnas correctas y te mostrará si falta algo."),
+             "**Sí.** Ve al tab **Cargar Documento → Excel**. El sistema validará que tenga las 5 hojas requeridas con las columnas correctas y te mostrará si falta algo."),
 
             ("¿Cómo funciona la validación cruzada de PDFs?",
              "Cuando un siniestro tiene PDFs asociados (parte policial + declaración + factura), FRAUDIA:\n1. Extrae los campos clave de cada PDF\n2. Los compara entre sí y contra el Excel\n3. Detecta inconsistencias como: nombres diferentes, fechas incoherentes, RUC inválido, lógica imposible (ej: robo + factura de reparación)\n\nCada inconsistencia suma puntos al score de riesgo."),
@@ -855,21 +1120,21 @@ with TABS[0]:
              "El mapa solo muestra las ciudades de Ecuador que tienen siniestros en el dataset cargado. Si filtras por nivel ROJO/AMARILLO/VERDE, solo se ven las ciudades que tienen casos de ese nivel."),
 
             ("¿Puedo exportar reportes?",
-             "**Sí.** En el Dashboard tienes 2 botones:\n- **📥 Exportar CSV** — los casos filtrados\n- **📄 Generar Reporte PDF Ejecutivo** — documento profesional con membrete, top 10 críticos, distribución por ramo y sección de ética para firmas"),
+             "**Sí.** En el Dashboard tienes 2 botones:\n- **Exportar CSV** — los casos filtrados\n- **Generar Reporte PDF Ejecutivo** — documento profesional con membrete, top 10 críticos, distribución por ramo y sección de ética para firmas"),
 
             ("¿Los datos son reales?",
              "**No.** Son 100% sintéticos. El reto exige no usar datos personales reales por seguridad y privacidad. En un despliegue real, el sistema se entrenaría con datos históricos anonimizados de la aseguradora."),
         ]
 
         for q, a in faqs:
-            with st.expander(f"❓ **{q}**", expanded=False):
+            with st.expander(f"**{q}**", expanded=False):
                 st.markdown(a)
 
         st.markdown("---")
         st.markdown("""
         <div style="background:#1B4F8A;color:white;border-radius:12px;padding:18px 24px;margin-top:14px">
-          <h4 style="color:white !important;margin:0 0 6px 0">💬 ¿Tienes otra pregunta?</h4>
-          <p style="margin:0;opacity:.95">Ve al tab <b>🤖 Agente IA</b> y pregúntale directamente al sistema.
+          <h4 style="color:white !important;margin:0 0 6px 0">¿Tienes otra pregunta?</h4>
+          <p style="margin:0;opacity:.95">Ve al tab <b>Agente IA</b> y pregúntale directamente al sistema.
           Por ejemplo: <i>"¿Qué siniestros tienen documentos alterados?"</i> o <i>"¿Por qué SIN-0005 es alto riesgo?"</i></p>
         </div>
         """, unsafe_allow_html=True)
@@ -878,9 +1143,9 @@ with TABS[0]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 1 — DASHBOARD
 # ═══════════════════════════════════════════════════════════════════════════════
-with TABS[1]:
+if PAGINA == "Dashboard":
     if not st.session_state.data_loaded:
-        st.info("👈 Carga el dataset desde el panel lateral para comenzar.")
+        st.info("Carga el dataset desde el panel lateral para comenzar.")
         st.stop()
 
     df   = st.session_state.scores_df
@@ -895,9 +1160,9 @@ with TABS[1]:
 
     for col, val, lbl, color in [
         (k1, len(df), "Total Siniestros", "#1B4F8A"),
-        (k2, (df.Nivel=="ROJO").sum(),    "🔴 Críticos",    "#E74C3C"),
-        (k3, (df.Nivel=="AMARILLO").sum(),"🟡 Medios",      "#F39C12"),
-        (k4, (df.Nivel=="VERDE").sum(),   "🟢 Bajos",       "#27AE60"),
+        (k2, (df.Nivel=="ROJO").sum(),    "Críticos",    "#E74C3C"),
+        (k3, (df.Nivel=="AMARILLO").sum(),"Medios",      "#F39C12"),
+        (k4, (df.Nivel=="VERDE").sum(),   "Bajos",       "#27AE60"),
         (k5, int(df.Score.mean()),        "Score Promedio", "#2980B9"),
     ]:
         col.markdown(
@@ -906,25 +1171,35 @@ with TABS[1]:
             unsafe_allow_html=True,
         )
 
-    # ── Ahorro Potencial ──────────────────────────────────────────────
+    # ── Ahorro Potencial (panel de alto impacto) ──────────────────────
     st.markdown("")
-    st.markdown("### 💰 Simulación de Ahorro Potencial")
-    a1, a2, a3, a4 = st.columns(4)
     monto_riesgo = df[df.Nivel.isin(["ROJO","AMARILLO"])]["Monto Reclamado"].sum() if "Monto Reclamado" in df.columns else 0
     ahorro_20 = monto_riesgo * 0.20
     pct_riesgo = (monto_riesgo / total_monto * 100) if total_monto > 0 else 0
 
-    for col, val, lbl, color in [
-        (a1, f"${total_monto:,.0f}",  "Total reclamado",          "#1B4F8A"),
-        (a2, f"${monto_riesgo:,.0f}", "Monto en riesgo (🔴+🟡)",  "#E74C3C"),
-        (a3, f"{pct_riesgo:.1f}%",    "% cartera en riesgo",      "#F39C12"),
-        (a4, f"${ahorro_20:,.0f}",    "Ahorro est. 20% recuperado","#27AE60"),
-    ]:
-        col.markdown(
-            f'<div class="kpi-box"><div class="kpi-val" style="color:{color};font-size:1.5rem">{val}</div>'
-            f'<div class="kpi-lbl">{lbl}</div></div>',
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        '<div class="save-panel">'
+        '  <div class="save-item"><div class="lbl">Total reclamado</div>'
+        f'      <div class="val">${total_monto:,.0f}</div></div>'
+        '  <div class="save-item"><div class="lbl">Monto en riesgo (crítico + medio)</div>'
+        f'      <div class="val" style="color:#FF9B8A !important">${monto_riesgo:,.0f}</div></div>'
+        '  <div class="save-item"><div class="lbl">% cartera en riesgo</div>'
+        f'      <div class="val">{pct_riesgo:.1f}%</div></div>'
+        '  <div class="save-item"><div class="lbl">Ahorro estimado (20% recuperado)</div>'
+        f'      <div class="val" style="color:#6FE3B0 !important">${ahorro_20:,.0f}</div></div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f'<div style="margin:10px 2px 0">'
+        f'  <div style="background:var(--surface-3);border-radius:999px;height:9px;overflow:hidden;border:1px solid var(--border)">'
+        f'    <div style="width:{min(pct_riesgo,100):.1f}%;height:9px;background:linear-gradient(90deg,#EBA63E,#C0392B);border-radius:999px"></div>'
+        f'  </div>'
+        f'  <div style="font-size:.74rem;color:var(--muted);margin-top:5px">'
+        f'    {pct_riesgo:.1f}% del monto reclamado proviene de casos que el sistema marca para revisión</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
 
     st.divider()
 
@@ -947,7 +1222,7 @@ with TABS[1]:
 
     filt = filt.sort_values("Score", ascending=False)
     disp = filt[["ID Siniestro","Ramo","Cobertura","Score","Nivel","Monto Reclamado","Sucursal","Alertas"]].copy()
-    disp["Nivel"] = disp["Nivel"].map({"ROJO":"🔴 ROJO","AMARILLO":"🟡 AMARILLO","VERDE":"🟢 VERDE"})
+    disp["Nivel"] = disp["Nivel"].map({"ROJO":"ROJO","AMARILLO":"AMARILLO","VERDE":"VERDE"})
     disp["Monto Reclamado"] = disp["Monto Reclamado"].apply(lambda x: f"${x:,.0f}")
 
     st.markdown(f"**{len(filt)} siniestros** encontrados")
@@ -957,10 +1232,10 @@ with TABS[1]:
     exp_c1, exp_c2 = st.columns([2, 3])
     csv_buf = filt.to_csv(index=False).encode("utf-8")
     exp_c1.download_button(
-        "📥 Exportar CSV", data=csv_buf,
+        "Exportar CSV", data=csv_buf,
         file_name="fraudia_alertas.csv", mime="text/csv",
     )
-    if exp_c2.button("📄 Generar Reporte PDF Ejecutivo"):
+    if exp_c2.button("Generar Reporte PDF Ejecutivo"):
         with st.spinner("Generando PDF…"):
             try:
                 from src.report_generator import generate_pdf_report
@@ -970,7 +1245,7 @@ with TABS[1]:
                     st.session_state.combined_df,
                 )
                 st.download_button(
-                    "⬇️ Descargar Reporte PDF",
+                    "Descargar Reporte PDF",
                     data=pdf_bytes,
                     file_name=f"FRAUDIA_Reporte_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.pdf",
                     mime="application/pdf",
@@ -1010,7 +1285,7 @@ with TABS[1]:
         st.plotly_chart(fig_bar, use_container_width=True)
 
     # ── Mapa Ecuador ─────────────────────────────────────────────────
-    st.markdown("### 🗺️ Mapa de Alertas por Ciudad — Ecuador")
+    st.markdown("### Mapa de Alertas por Ciudad — Ecuador")
     try:
         from src.anomaly_model import build_ecuador_map, get_city_ranking
 
@@ -1018,15 +1293,15 @@ with TABS[1]:
         mf1, mf2 = st.columns([1, 4])
         map_filter = mf1.selectbox(
             "Filtrar mapa por nivel",
-            ["Todos", "🔴 ROJO", "🟡 AMARILLO", "🟢 VERDE"],
+            ["Todos", "ROJO", "AMARILLO", "VERDE"],
             key="map_filter",
         )
         # Extraer el nivel limpio
         filter_clean = {
             "Todos":        "Todos",
-            "🔴 ROJO":      "ROJO",
-            "🟡 AMARILLO":  "AMARILLO",
-            "🟢 VERDE":     "VERDE",
+            "ROJO":      "ROJO",
+            "AMARILLO":  "AMARILLO",
+            "VERDE":     "VERDE",
         }[map_filter]
         mf2.markdown(
             '<div style="padding-top:30px;color:#5D6D7E;font-size:.85rem">'
@@ -1041,7 +1316,7 @@ with TABS[1]:
         st.info(f"Mapa no disponible: {e}")
 
     # ── Ranking ciudades por nivel (con filtros) ─────────────────────
-    st.markdown("### 🏙️ Ranking de Ciudades por Nivel de Riesgo")
+    st.markdown("### Ranking de Ciudades por Nivel de Riesgo")
     try:
         ranking = get_city_ranking(df, sin_df)
         if not ranking.empty:
@@ -1049,7 +1324,7 @@ with TABS[1]:
             fc1, fc2, fc3 = st.columns([1, 1, 2])
             nivel_pick = fc1.selectbox(
                 "Nivel de riesgo",
-                ["🔴 ROJO", "🟡 AMARILLO", "🟢 VERDE"],
+                ["ROJO", "AMARILLO", "VERDE"],
                 key="city_nivel",
             )
             top_n = fc2.selectbox(
@@ -1063,9 +1338,9 @@ with TABS[1]:
 
             # Determinar columnas y orden según el nivel
             nivel_map_cfg = {
-                "🔴 ROJO":     ("Rojos",      "Pct_Rojo",      "#E74C3C", "#FEF5F5", "#FADBD8"),
-                "🟡 AMARILLO": ("Amarillos",  "Pct_Amarillo",  "#F39C12", "#FEFAF0", "#FDEBD0"),
-                "🟢 VERDE":    ("Verdes",     "Pct_Verde",     "#27AE60", "#F0FDF4", "#D4EFDF"),
+                "ROJO":     ("Rojos",      "Pct_Rojo",      "#E74C3C", "#FEF5F5", "#FADBD8"),
+                "AMARILLO": ("Amarillos",  "Pct_Amarillo",  "#F39C12", "#FEFAF0", "#FDEBD0"),
+                "VERDE":    ("Verdes",     "Pct_Verde",     "#27AE60", "#F0FDF4", "#D4EFDF"),
             }
             col_count, col_pct, color, bg_color, border_color = nivel_map_cfg[nivel_pick]
 
@@ -1140,12 +1415,12 @@ with TABS[1]:
                     )
                     st.plotly_chart(fig_rank, use_container_width=True)
 
-            with st.expander("📋 Ver ranking completo de ciudades"):
+            with st.expander("Ver ranking completo de ciudades"):
                 rank_full = ranking.sort_values("Total", ascending=False)[
                     ["Ciudad","Total","Rojos","Amarillos","Verdes",
                      "Pct_Rojo","Pct_Amarillo","Pct_Verde","Score_Prom","Nivel_Predominante"]
                 ].reset_index(drop=True)
-                rank_full.columns = ["Ciudad","Total","🔴","🟡","🟢",
+                rank_full.columns = ["Ciudad","Total","","","",
                                      "% Rojo","% Amarillo","% Verde","Score Prom","Nivel Predominante"]
                 st.dataframe(rank_full, use_container_width=True, hide_index=True)
     except Exception as e:
@@ -1155,7 +1430,7 @@ with TABS[1]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — SINIESTRO INDIVIDUAL
 # ═══════════════════════════════════════════════════════════════════════════════
-with TABS[2]:
+if PAGINA == "Siniestro":
     if not st.session_state.data_loaded:
         st.info("Carga el dataset primero.")
         st.stop()
@@ -1174,7 +1449,7 @@ with TABS[2]:
 
     nivel = result["nivel"]
     score = sc_row.get("Score", result["score"])
-    em    = {"ROJO":"🔴","AMARILLO":"🟡","VERDE":"🟢"}[nivel]
+    em    = {"ROJO":"","AMARILLO":"","VERDE":""}[nivel]
     color_nivel = {"ROJO":"#E74C3C","AMARILLO":"#F39C12","VERDE":"#27AE60"}[nivel]
     fill_cls    = {"ROJO":"score-fill-rojo","AMARILLO":"score-fill-amar","VERDE":"score-fill-verde"}[nivel]
 
@@ -1194,7 +1469,7 @@ with TABS[2]:
     col_a, col_b = st.columns(2)
 
     with col_a:
-        st.markdown("#### 📋 Datos del Siniestro")
+        st.markdown("#### Datos del Siniestro")
         fields_s = {
             "Ramo": sin_row.get("Ramo"), "Cobertura": sin_row.get("Cobertura"),
             "Placa": sin_row.get("Placa Vehículo Asegurado"),
@@ -1210,7 +1485,7 @@ with TABS[2]:
         }
         for k, v in fields_s.items():
             st.markdown(f"**{k}:** {v}")
-        st.info(f"📝 {sin_row.get('Descripción del Evento','—')}")
+        st.info(f"{sin_row.get('Descripción del Evento','—')}")
 
         aseg_id = sin_row.get("ID Asegurado","")
         aseg_df = shet.get("3_Asegurados", pd.DataFrame())
@@ -1218,12 +1493,12 @@ with TABS[2]:
             ar = aseg_df[aseg_df["ID Asegurado"]==aseg_id]
             if not ar.empty:
                 ar = ar.iloc[0]
-                st.markdown("#### 👤 Asegurado")
+                st.markdown("#### Asegurado")
                 st.markdown(f"**{ar.get('Nombres Asegurado','')}** · {ar.get('Ciudad','')} · {ar.get('Antigüedad (años)','')} años")
                 st.markdown(f"Reclamos 12m: **{ar.get('N° Reclamos Últimos 12 Meses','')}** | Histórico: **{ar.get('N° Reclamos Histórico Total','')}** | Perfil: **{ar.get('Perfil Riesgo Histórico','')}**")
 
     with col_b:
-        st.markdown("#### 🎯 Desglose del Score")
+        st.markdown("#### Desglose del Score")
         breakdown = result.get("breakdown", [])
         if breakdown:
             for item in sorted(breakdown, key=lambda x: -x["puntos"]):
@@ -1245,14 +1520,14 @@ with TABS[2]:
             st.markdown("**Reglas críticas activadas:**")
             for cr in result["critical_rules"]:
                 lvl = "card-rojo" if cr in result.get("critical_rojo",[]) else "card-amar"
-                st.markdown(f'<div class="{lvl}">⚡ {cr}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="{lvl}">{cr}</div>', unsafe_allow_html=True)
 
         # PDFs
-        st.markdown("#### 📄 Documentos PDF")
+        st.markdown("#### Documentos PDF")
         pdf_docs = (pdf_map or {}).get(sin_sel, {})
         if pdf_docs:
             for dtype, path in pdf_docs.items():
-                st.markdown(f'<div class="card-azul">✅ <b>{dtype}</b>: <code>{os.path.basename(path)}</code></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="card-azul"><b>{dtype}</b>: <code>{os.path.basename(path)}</code></div>', unsafe_allow_html=True)
                 
                 # Extraer y mostrar campos estructurados
                 txt = ""
@@ -1274,7 +1549,7 @@ with TABS[2]:
                         st.info("Texto no disponible")
 
             # Cross-validation
-            st.markdown("#### ⚡ Validación Cruzada")
+            st.markdown("#### Validación Cruzada")
             all_f: dict = {}
             for dtype, path in pdf_docs.items():
                 try:
@@ -1286,22 +1561,22 @@ with TABS[2]:
             for idx, m in enumerate(matches):
                 col_m1, col_m2 = st.columns([5, 1])
                 with col_m1:
-                    st.markdown(f'<div class="match-ok">✓ <b>{m["campo"]}</b>: {m["valor"]}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="match-ok"><b>{m["campo"]}</b>: {m["valor"]}</div>', unsafe_allow_html=True)
                 with col_m2:
                     st.markdown('<div style="padding-top:4px;"></div>', unsafe_allow_html=True)
-                    if st.button("🔍 Ver", key=f"btn_match_t2_{idx}"):
+                    if st.button("Ver", key=f"btn_match_t2_{idx}"):
                         mostrar_modal_coincidencia(m, sin_row, all_f)
             for iss in issues:
                 css = f'issue-{iss["nivel"]}'
                 st.markdown(
-                    f'<div class="{css}"><b>✗ [{iss["nivel"]}] {iss["campo"]}</b><br>'
+                    f'<div class="{css}"><b>[{iss["nivel"]}] {iss["campo"]}</b><br>'
                     f'<i>{iss["descripcion"]}</i></div>', unsafe_allow_html=True,
                 )
         else:
             st.markdown('<div class="card-azul">No hay PDFs para este siniestro.</div>', unsafe_allow_html=True)
 
         # Acción
-        st.markdown("#### 🚦 Acción Recomendada")
+        st.markdown("#### Acción Recomendada")
         if nivel == "ROJO":
             st.error("**ESCALAR** → Unidad Antifraude — revisión especializada de campo.")
         elif nivel == "AMARILLO":
@@ -1313,16 +1588,16 @@ with TABS[2]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 3 — CARGAR DOCUMENTO
 # ═══════════════════════════════════════════════════════════════════════════════
-with TABS[3]:
-    st.markdown("## 📄 Ingestión y Validación de Documentos")
+if PAGINA == "Cargar Documento":
+    st.markdown("## Ingestión y Validación de Documentos")
     st.caption("Selecciona **PDF** para extraer datos de siniestros y realizar validación cruzada en tiempo real, o **Excel** para comprobar la estructura de una nueva base de datos corporativa.")
 
-    utype = st.radio("Tipo de archivo", ["📄 PDF", "📊 Excel"], horizontal=True, key="utype")
+    utype = st.radio("Tipo de archivo", ["PDF", "Excel"], horizontal=True, key="utype")
 
-    if utype == "📊 Excel":
+    if utype == "Excel":
         st.markdown("### Estructura esperada")
         for sname, cols in EXPECTED_SHEETS.items():
-            with st.expander(f"📋 {sname}"):
+            with st.expander(f"{sname}"):
                 st.markdown(", ".join(f"`{c}`" for c in cols))
 
         uxl = st.file_uploader("Cargar Excel", type=["xlsx","xls"], key="uxl")
@@ -1336,13 +1611,13 @@ with TABS[3]:
                 st.markdown("### Resultado de validación")
                 for sname, res in val.items():
                     if res["found"] and not res["missing_cols"]:
-                        st.success(f"✅ **{sname}** — {res['rows']} filas — Estructura completa")
+                        st.success(f"**{sname}** — {res['rows']} filas — Estructura completa")
                     elif res["found"]:
-                        st.warning(f"⚠️ **{sname}** — Columnas faltantes: {', '.join(res['missing_cols'])}")
+                        st.warning(f"**{sname}** — Columnas faltantes: {', '.join(res['missing_cols'])}")
                     else:
-                        st.error(f"❌ **{sname}** — No encontrada")
+                        st.error(f"**{sname}** — No encontrada")
                 if all(r["found"] and not r["missing_cols"] for r in val.values()):
-                    if st.button("✅ Usar como dataset activo"):
+                    if st.button("Usar como dataset activo"):
                         sc2 = calculate_scores_batch(new_sh, None)
                         st.session_state.update(sheets=new_sh, scores_df=sc2, data_loaded=True, rag_ready=False)
                         st.success("Dataset cargado."); st.rerun()
@@ -1365,8 +1640,8 @@ with TABS[3]:
             finally:
                 os.unlink(tmp_path)
 
-            tipo_lbl = {"PARTE_POLICIAL":"📋 Parte Policial","DECLARACION":"📝 Declaración Accidente",
-                        "FACTURA":"🧾 Factura","UNKNOWN":"❓ Desconocido"}.get(doc_type, doc_type)
+            tipo_lbl = {"PARTE_POLICIAL":"Parte Policial","DECLARACION":"Declaración Accidente",
+                        "FACTURA":"Factura","UNKNOWN":"Desconocido"}.get(doc_type, doc_type)
             st.markdown(f"### {tipo_lbl}")
             if sin_id:
                 st.markdown(f"**Siniestro vinculado:** `{sin_id}`")
@@ -1377,15 +1652,15 @@ with TABS[3]:
                 st.dataframe(pd.DataFrame(field_rows), use_container_width=True, hide_index=True)
 
             for msg, lvl in [
-                ("🚨 DOCUMENTO MARCADO COMO ALTERADO", "error" if fields.get("documento_alterado") else ""),
-                ("⚠️ RUC del proveedor INVÁLIDO", "warning" if fields.get("ruc_invalido") else ""),
-                ("⚠️ Evento en horario de madrugada", "warning" if fields.get("es_madrugada") else ""),
-                ("⚠️ Sin denuncia policial previa", "warning" if fields.get("sin_denuncia") else ""),
+                ("DOCUMENTO MARCADO COMO ALTERADO", "error" if fields.get("documento_alterado") else ""),
+                ("RUC del proveedor INVÁLIDO", "warning" if fields.get("ruc_invalido") else ""),
+                ("Evento en horario de madrugada", "warning" if fields.get("es_madrugada") else ""),
+                ("Sin denuncia policial previa", "warning" if fields.get("sin_denuncia") else ""),
             ]:
                 if lvl: getattr(st, lvl)(msg)
 
             if st.session_state.data_loaded and sin_id:
-                st.markdown("### ⚡ Validación Cruzada contra Dataset")
+                st.markdown("### Validación Cruzada contra Dataset")
                 sin_df3 = st.session_state.sheets.get("1_Siniestros", pd.DataFrame())
                 match_r = sin_df3[sin_df3["ID Siniestro"]==sin_id]
                 if not match_r.empty:
@@ -1399,24 +1674,24 @@ with TABS[3]:
                     issues, matches, boost = cross_validate(sin_id, ex_row, af)
                     c1, c2 = st.columns(2)
                     with c1:
-                        st.markdown(f"**✅ Coincidencias ({len(matches)})**")
+                        st.markdown(f"**Coincidencias ({len(matches)})**")
                         for idx, m in enumerate(matches):
                             col_m1, col_m2 = st.columns([5, 1])
                             with col_m1:
-                                st.markdown(f'<div class="match-ok">✓ <b>{m["campo"]}</b>: {m["valor"]}</div>', unsafe_allow_html=True)
+                                st.markdown(f'<div class="match-ok"><b>{m["campo"]}</b>: {m["valor"]}</div>', unsafe_allow_html=True)
                             with col_m2:
                                 st.markdown('<div style="padding-top:4px;"></div>', unsafe_allow_html=True)
-                                if st.button("🔍 Ver", key=f"btn_match_t3_{idx}"):
+                                if st.button("Ver", key=f"btn_match_t3_{idx}"):
                                     mostrar_modal_coincidencia(m, ex_row, af)
                     with c2:
-                        st.markdown(f"**⚠️ Inconsistencias ({len(issues)})**")
+                        st.markdown(f"**Inconsistencias ({len(issues)})**")
                         for iss in issues:
                             st.markdown(f'<div class="issue-{iss["nivel"]}"><b>[{iss["nivel"]}] {iss["campo"]}</b><br><i>{iss["descripcion"]}</i></div>', unsafe_allow_html=True)
 
                     base_r = score_siniestro(ex_row, fields)
                     total  = min(base_r["score"] + boost, 100)
                     nivel2 = "ROJO" if total>=76 else "AMARILLO" if total>=41 else "VERDE"
-                    em2    = {"ROJO":"🔴","AMARILLO":"🟡","VERDE":"🟢"}[nivel2]
+                    em2    = {"ROJO":"","AMARILLO":"","VERDE":""}[nivel2]
                     c_n2   = {"ROJO":"#E74C3C","AMARILLO":"#F39C12","VERDE":"#27AE60"}[nivel2]
                     st.markdown(
                         f'<div style="background:{c_n2}18;border:2px solid {c_n2};border-radius:10px;'
@@ -1435,14 +1710,14 @@ with TABS[3]:
                     st.warning(f"Siniestro {sin_id} no encontrado en la base de datos oficial (Excel).")
                     st.markdown(
                         '<div class="card-amar" style="padding:15px;border-radius:10px;margin-bottom:12px">'
-                        f'💡 <b>Auto-Ingesta Inteligente Activa</b><br>'
+                        f'<b>Auto-Ingesta Inteligente Activa</b><br>'
                         f'El documento subido pertenece a un siniestro nuevo <b>({sin_id})</b>. '
                         f'¿Deseas dar de alta este siniestro automáticamente en caliente '
                         f'usando los datos extraídos por IA de este PDF?'
                         '</div>', unsafe_allow_html=True
                     )
                     
-                    if st.button("📥 Registrar Siniestro en Base de Datos", use_container_width=True, type="primary", key="btn_auto_ingest"):
+                    if st.button("Registrar Siniestro en Base de Datos", use_container_width=True, type="primary", key="btn_auto_ingest"):
                         with st.spinner("Procesando auto-ingesta y registrando en caliente…"):
                             try:
                                 # 1. Extraer los datos para el nuevo siniestro
@@ -1513,7 +1788,7 @@ with TABS[3]:
                                 if st.session_state.rag_ready:
                                     st.session_state.rag.add_document(text, sin_id, doc_type)
                                 
-                                st.success(f"🎉 Siniestro {sin_id} registrado y auto-ingestado con éxito. ¡Base de datos de la sesión actualizada!")
+                                st.success(f"Siniestro {sin_id} registrado y auto-ingestado con éxito. ¡Base de datos de la sesión actualizada!")
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Error en auto-ingesta: {e}")
@@ -1522,11 +1797,11 @@ with TABS[3]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 4 — AGENTE IA
 # ═══════════════════════════════════════════════════════════════════════════════
-with TABS[4]:
-    st.markdown("## 🤖 Agente Antifraude IA")
+if PAGINA == "Agente IA":
+    st.markdown("## Agente Antifraude IA")
     st.markdown(
         '<div class="card-azul" style="display:flex;align-items:center;gap:10px">'
-        '<span style="font-size:1.5rem">🧠</span>'
+        '<span style="font-size:1.5rem"></span>'
         '<div>'
         '<b>Sistema RAG local + Groq llama-3.1-8b-instant</b><br>'
         '<small style="color:#5D6D7E">'
@@ -1543,7 +1818,7 @@ with TABS[4]:
         if is_retrieval_only:
             st.markdown(
                 '<div class="card-amar" style="padding:12px 18px;margin-bottom:12px">'
-                '<b>🟡 Agente activo — Modo Retrieval-Only</b><br>'
+                '<b>Agente activo — Modo Retrieval-Only</b><br>'
                 '<small>El agente recupera datos reales con FAISS y los muestra. '
                 'Para respuestas naturales con redacción, pega tu Groq API Key en el sidebar.</small>'
                 '</div>', unsafe_allow_html=True,
@@ -1551,20 +1826,20 @@ with TABS[4]:
         else:
             st.markdown(
                 '<div class="card-verde" style="padding:12px 18px;margin-bottom:12px">'
-                '<b>🟢 Agente activo — Modo Completo</b><br>'
+                '<b>Agente activo — Modo Completo</b><br>'
                 '<small>RAG + Groq llama-3.1-8b-instant. Respuestas naturales en &lt;3s con streaming.</small>'
                 '</div>', unsafe_allow_html=True,
             )
     else:
         st.markdown(
             '<div class="card-azul" style="padding:14px 20px;margin-bottom:14px">'
-            '<h4 style="color:#1B4F8A !important;margin:0 0 6px 0">🧠 ¿Cómo funciona este agente?</h4>'
+            '<h4 style="color:#1B4F8A !important;margin:0 0 6px 0">¿Cómo funciona este agente?</h4>'
             '<p style="margin:0;color:#1A3A5C;font-size:.95rem">'
             'Sistema <b>RAG (Retrieval-Augmented Generation)</b> con dos modos:'
             '</p>'
             '<ul style="margin:6px 0 0 0;color:#1A3A5C;font-size:.95rem">'
-            '<li><b>🟡 Retrieval-only:</b> recupera datos del dataset con FAISS. <b>No requiere API Key.</b></li>'
-            '<li><b>🟢 Completo:</b> retrieval + LLM Groq llama-3.1-8b-instant. Requiere API Key.</li>'
+            '<li><b>Retrieval-only:</b> recupera datos del dataset con FAISS. <b>No requiere API Key.</b></li>'
+            '<li><b>Completo:</b> retrieval + LLM Groq llama-3.1-8b-instant. Requiere API Key.</li>'
             '</ul>'
             '<p style="margin:10px 0 0 0;color:#1A3A5C;font-size:.85rem">'
             '⏳ <b>Carga el dataset</b> para activar el agente automáticamente.'
@@ -1573,10 +1848,10 @@ with TABS[4]:
         )
 
     # ── 12 preguntas SIEMPRE visibles ────────────────────────────────
-    st.markdown("### 📋 Las 12 preguntas del reto — Sección 12 del PDF")
+    st.markdown("### Las 12 preguntas del reto — Sección 12 del PDF")
     if not st.session_state.rag_ready:
         if not st.session_state.data_loaded:
-            st.caption("⚠️ Carga el dataset desde el panel lateral primero.")
+            st.caption("Carga el dataset desde el panel lateral primero.")
         else:
             st.caption("⏳ Activando agente automáticamente…")
     else:
@@ -1602,7 +1877,7 @@ with TABS[4]:
 
     sc1, sc2, sc3 = st.columns(3)
     for i, s in enumerate(PREGUNTAS_PDF):
-        emoji = "🔴" if i < 3 else "🟡" if i < 6 else "🔵"
+        emoji = "" if i < 3 else "" if i < 6 else ""
         label = f"{emoji} {s[:42]}…" if len(s) > 42 else f"{emoji} {s}"
         clicked = [sc1, sc2, sc3][i % 3].button(
             label, key=f"pdf_q{i}", use_container_width=True, help=s,
@@ -1621,7 +1896,7 @@ with TABS[4]:
     # Mostrar TODO el historial primero
     for msg in st.session_state.chat_history:
         css = "chat-user" if msg["role"] == "user" else "chat-bot"
-        who = "👤 Analista" if msg["role"] == "user" else "🤖 Agente FRAUDIA"
+        who = "Analista" if msg["role"] == "user" else "Agente FRAUDIA"
         st.markdown(
             f'<div class="{css}"><b>{who}:</b> {msg["content"]}</div>',
             unsafe_allow_html=True,
@@ -1632,7 +1907,7 @@ with TABS[4]:
         q = st.session_state.pending_question
         # Mostrar la pregunta del usuario
         st.markdown(
-            f'<div class="chat-user"><b>👤 Analista:</b> {q}</div>',
+            f'<div class="chat-user"><b>Analista:</b> {q}</div>',
             unsafe_allow_html=True,
         )
         hist = [m for m in st.session_state.chat_history if m["role"] in ("user","assistant")]
@@ -1641,10 +1916,10 @@ with TABS[4]:
         try:
             import time as _t
             t0 = _t.time()
-            st.markdown('<div class="chat-bot"><b>🤖 Agente FRAUDIA:</b></div>', unsafe_allow_html=True)
+            st.markdown('<div class="chat-bot"><b>Agente FRAUDIA:</b></div>', unsafe_allow_html=True)
             response_text = st.write_stream(st.session_state.rag.answer_stream(q, hist))
             elapsed = _t.time() - t0
-            st.caption(f"⚡ Respondido en {elapsed:.1f}s")
+            st.caption(f"Respondido en {elapsed:.1f}s")
 
             # Guardar en historial
             st.session_state.chat_history.append({"role": "user", "content": q})
@@ -1670,7 +1945,7 @@ with TABS[4]:
             st.session_state.pending_question = ui.strip()
             st.rerun()
 
-    if st.button("🗑️ Limpiar chat"):
+    if st.button("Limpiar chat"):
         st.session_state.chat_history = []
         st.session_state.pending_question = None
         st.rerun()
@@ -1679,8 +1954,8 @@ with TABS[4]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 5 — MODELO ML (Isolation Forest + Random Forest + Score Combinado)
 # ═══════════════════════════════════════════════════════════════════════════════
-with TABS[5]:
-    st.markdown("## 🧠 Modelo de Inteligencia Artificial — Enfoque Híbrido")
+if PAGINA == "Modelo ML":
+    st.markdown("## Modelo de Inteligencia Artificial — Enfoque Híbrido")
     st.caption(
         "Combina Reglas de Negocio + Isolation Forest (anomalías) + Random Forest (supervisado). "
         "Implementa la sección 9 del reto: enfoque híbrido ML + NLP + Agente IA."
@@ -1691,23 +1966,32 @@ with TABS[5]:
         st.stop()
 
     ml_subtab1, ml_subtab2, ml_subtab3 = st.tabs([
-        "🌲 Random Forest Supervisado",
-        "🔮 Isolation Forest (Anomalías)",
-        "🕸️ Narrativas Clonadas",
+        "Random Forest Supervisado",
+        "Isolation Forest (Anomalías)",
+        "Narrativas Clonadas",
     ])
 
     # ── SUB-TAB A: RANDOM FOREST ──────────────────────────────────────
     with ml_subtab1:
-        st.markdown("### Random Forest Supervisado con Etiqueta Simulada")
+        st.markdown("### Random Forest Supervisado con Etiqueta Proxy")
         st.markdown(
-            '<div class="card-azul">La etiqueta de fraude se genera a partir del score de reglas '
-            '(≥76 pts → posible fraude). Esto implementa la sección 9: '
-            '<b>Machine Learning supervisado</b>.</div>', unsafe_allow_html=True
+            '<div class="card-azul">El dataset no incluye <code>etiqueta_fraude_simulada</code>, '
+            'por lo que se genera una <b>etiqueta proxy</b>: un caso se considera "posible fraude" '
+            'cuando combina anomalía estadística (Isolation Forest interno ≥60) <b>y</b> al menos una '
+            'señal o regla crítica activa. Implementa la sección 9 (<b>ML supervisado</b>).</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="card-amar"><b>Lectura honesta de las métricas:</b> al no existir un '
+            '<i>ground truth</i> real, AUC/F1 miden qué tan bien el modelo reproduce la lógica de '
+            'reglas+anomalías, no fraude confirmado. Son <b>referenciales para trazabilidad</b>, no '
+            'una validación contra fraude real.</div>',
+            unsafe_allow_html=True,
         )
         st.markdown("")
 
         if st.session_state.rf_result is None:
-            if st.button("🌲 Entrenar Random Forest (300 árboles)", type="primary"):
+            if st.button("Entrenar Random Forest (300 árboles)", type="primary"):
                 with st.spinner("Entrenando… validación cruzada 5-fold…"):
                     try:
                         from src.supervised_model import train_random_forest, build_combined_df
@@ -1726,7 +2010,7 @@ with TABS[5]:
                         )
                         st.session_state.rf_result    = rf
                         st.session_state.combined_df  = comb
-                        st.success("✅ Random Forest entrenado")
+                        st.success("Random Forest entrenado")
                         st.rerun()
                     except Exception as e:
                         st.error(str(e))
@@ -1812,7 +2096,7 @@ with TABS[5]:
             # Score Combinado
             if comb is not None:
                 st.divider()
-                st.markdown("### 🎯 Score Final Combinado = 50% Reglas + 25% IF + 25% RF")
+                st.markdown("### Score Final Combinado = 50% Reglas + 25% IF + 25% RF")
                 dist_c = comb["Nivel_Final"].value_counts().reset_index()
                 dist_c.columns = ["Nivel", "Casos"]
                 tc1, tc2 = st.columns(2)
@@ -1847,7 +2131,7 @@ with TABS[5]:
                 top_comb.columns = ["Siniestro","Score Reglas","Score IF","Score RF","Score Final","Nivel","Cobertura"]
                 st.dataframe(top_comb.reset_index(drop=True), use_container_width=True)
 
-            if st.button("🔄 Reentrenar RF"):
+            if st.button("Reentrenar RF"):
                 st.session_state.rf_result = None
                 st.session_state.combined_df = None
                 st.rerun()
@@ -1857,13 +2141,13 @@ with TABS[5]:
         st.markdown("### Isolation Forest — Detección de Anomalías No Supervisada")
 
         if st.session_state.ml_result is None:
-            if st.button("⚙️ Entrenar Isolation Forest", type="primary"):
+            if st.button("Entrenar Isolation Forest", type="primary"):
                 with st.spinner("Entrenando Isolation Forest (200 árboles)…"):
                     try:
                         from src.anomaly_model import train_model
                         ml = train_model(st.session_state.sheets, 0.30)
                         st.session_state.ml_result = ml
-                        st.success(f"✅ {ml['n_anomalies']} anomalías detectadas")
+                        st.success(f"{ml['n_anomalies']} anomalías detectadas")
                         st.rerun()
                     except Exception as e:
                         st.error(str(e))
@@ -1921,7 +2205,7 @@ with TABS[5]:
 
     # ── SUB-TAB C: NARRATIVAS CLONADAS ───────────────────────────────
     with ml_subtab3:
-        st.markdown("### 🕵️ Red de Narrativas Clonadas — Posibles Anillos de Fraude Coordinado")
+        st.markdown("### Red de Narrativas Clonadas — Posibles Anillos de Fraude Coordinado")
         st.markdown(
             '<div class="card-rojo">Los nodos representan siniestros con descripciones similares entre sí. '
             'Las aristas indican similitud de texto ≥65%. Grupos conectados pueden indicar '
@@ -1933,8 +2217,8 @@ with TABS[5]:
         th = st.slider("Umbral de similitud", 0.70, 0.98, 0.85, 0.01,
                        help="Mayor umbral = solo casos casi idénticos. 0.85 = clonación probable.")
 
-        if st.button("🔍 Detectar Narrativas Clonadas", type="primary") or st.session_state.clusters is not None:
-            if st.session_state.clusters is None or st.button("🔄 Recalcular", key="reclust"):
+        if st.button("Detectar Narrativas Clonadas", type="primary") or st.session_state.clusters is not None:
+            if st.session_state.clusters is None or st.button("Recalcular", key="reclust"):
                 with st.spinner("Analizando similitud textual (TF-IDF)…"):
                     try:
                         from src.anomaly_model import compute_narrative_clusters
@@ -1971,15 +2255,15 @@ with TABS[5]:
 
                 # Tabla de grupos clonados
                 if cl.get("groups"):
-                    st.markdown("#### 🚨 Grupos con narrativas idénticas que incluyen casos de riesgo")
+                    st.markdown("#### Grupos con narrativas idénticas que incluyen casos de riesgo")
                     grp_rows = []
                     for g in cl["groups"][:30]:
                         grp_rows.append({
                             "Narrativa repetida": g["narrativa"],
                             "Tamaño grupo": g["tamaño"],
-                            "🔴 Rojos": g["n_rojo"],
-                            "🟡 Amarillos": g["n_amarillo"],
-                            "🟢 Verdes": g["n_verde"],
+                            "Rojos": g["n_rojo"],
+                            "Amarillos": g["n_amarillo"],
+                            "Verdes": g["n_verde"],
                             "Score máx": g["score_max"],
                             "Primeros siniestros": ", ".join(g["siniestros"][:5]),
                         })
@@ -1989,8 +2273,8 @@ with TABS[5]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 5 — RED RELACIONAL
 # ═══════════════════════════════════════════════════════════════════════════════
-with TABS[6]:
-    st.markdown("## 🕸️ Red Relacional")
+if PAGINA == "Red Relacional":
+    st.markdown("## Red Relacional")
     st.caption("Grafo interactivo: Asegurados ↔ Siniestros ↔ Proveedores. Coloreado por nivel de riesgo.")
 
     if not st.session_state.data_loaded:
@@ -2015,8 +2299,8 @@ with TABS[6]:
 
         lc = st.columns(5)
         for col, (ic, lb) in zip(lc, [
-            ("🔴","Siniestro crítico"),("🟡","Siniestro medio"),
-            ("🟢","Siniestro bajo"),("🔷","Asegurado"),("🟠","Proveedor"),
+            ("","Siniestro crítico"),("","Siniestro medio"),
+            ("","Siniestro bajo"),("","Asegurado"),("","Proveedor"),
         ]):
             col.markdown(f"<small>{ic} {lb}</small>", unsafe_allow_html=True)
 
@@ -2024,13 +2308,13 @@ with TABS[6]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 6 — ÉTICA Y LIMITACIONES
 # ═══════════════════════════════════════════════════════════════════════════════
-with TABS[7]:
-    st.markdown("## ⚖️ Ética, Limitaciones y Declaración de Uso Responsable")
+if PAGINA == "Ética":
+    st.markdown("## Ética, Limitaciones y Declaración de Uso Responsable")
     st.caption("FRAUDIA está diseñado para apoyar — nunca para reemplazar — el juicio del analista humano.")
 
     st.markdown("""
     <div style="background:#1B4F8A;color:white;border-radius:12px;padding:16px 20px;margin-bottom:20px">
-    <b style="font-size:1.1rem">⚖️ Principio fundamental</b><br>
+    <b style="font-size:1.1rem">Principio fundamental</b><br>
     FRAUDIA genera <b>alertas de revisión</b>, no acusaciones de fraude. Ningún siniestro puede ser
     rechazado automáticamente por este sistema. La decisión final es SIEMPRE del analista especializado.
     </div>
@@ -2039,15 +2323,15 @@ with TABS[7]:
     e1, e2 = st.columns(2)
 
     with e1:
-        st.markdown("### 🎯 Propósito y alcance")
+        st.markdown("### Propósito y alcance")
         items = [
-            ("✅ Está permitido", [
+            ("Está permitido", [
                 "Generar alertas para priorizar revisión humana",
                 "Calcular scores de riesgo como apoyo al analista",
                 "Identificar patrones estadísticos sospechosos",
                 "Reducir tiempo de búsqueda de casos irregulares",
             ]),
-            ("❌ No está permitido", [
+            ("No está permitido", [
                 "Rechazar automáticamente un siniestro",
                 "Acusar formalmente a un asegurado de fraude",
                 "Sustituir el análisis humano especializado",
@@ -2055,15 +2339,15 @@ with TABS[7]:
             ]),
         ]
         for title, pts in items:
-            color = "#27AE60" if "✅" in title else "#E74C3C"
+            color = "#27AE60" if "" in title else "#E74C3C"
             st.markdown(f'<div style="border-left:4px solid {color};padding:8px 12px;'
-                        f'background:{"#F0FDF4" if "✅" in title else "#FEF5F5"};'
+                        f'background:{"#F0FDF4" if "" in title else "#FEF5F5"};'
                         f'border-radius:6px;margin:8px 0"><b>{title}:</b></div>', unsafe_allow_html=True)
             for pt in pts:
                 st.markdown(f"• {pt}")
 
         st.divider()
-        st.markdown("### ⚠️ Limitaciones del modelo")
+        st.markdown("### Limitaciones del modelo")
         limits = [
             ("Tasa de falsos positivos estimada", "15–20%",
              "Casos legítimos que el modelo marca como sospechosos. Requieren revisión para no afectar al asegurado."),
@@ -2081,7 +2365,7 @@ with TABS[7]:
             )
 
     with e2:
-        st.markdown("### 📊 Análisis de Sesgo por Categoría")
+        st.markdown("### Análisis de Sesgo por Categoría")
 
         if st.session_state.data_loaded:
             df_bias = st.session_state.scores_df.copy()
@@ -2134,7 +2418,7 @@ with TABS[7]:
             st.info("Carga el dataset para ver el análisis de sesgo.")
 
         st.divider()
-        st.markdown("### 🔄 Flujo de Revisión Humana Recomendado")
+        st.markdown("### Flujo de Revisión Humana Recomendado")
         st.markdown("""
         ```
         FRAUDIA genera alerta ROJA
@@ -2149,9 +2433,8 @@ with TABS[7]:
         ```
         """)
 
-# ── Mover Tab Proveedores al índice correcto ──────────────────────────────────
-with TABS[8]:
-    st.markdown("## 🏢 Análisis de Proveedores")
+if PAGINA == "Proveedores":
+    st.markdown("## Análisis de Proveedores")
 
     if not st.session_state.data_loaded:
         st.info("Carga el dataset primero.")
@@ -2171,7 +2454,7 @@ with TABS[8]:
             p1, p2, p3 = st.columns(3)
             rest = prov_df[prov_df["En Lista Restrictiva"].str.lower().isin(["sí","si","yes"])]
             p1.metric("Total Proveedores", len(prov_df))
-            p2.metric("🔴 Lista Restrictiva", len(rest))
+            p2.metric("Lista Restrictiva", len(rest))
             p3.metric("Con Alertas Rojas", (prov_df.Alertas_Rojas>0).sum())
 
             st.divider()
@@ -2198,7 +2481,7 @@ with TABS[8]:
 
             # Exportar proveedores
             csv_p = pshow[cols_p].to_csv(index=False).encode("utf-8")
-            st.download_button("📥 Exportar proveedores", csv_p, "proveedores.csv", "text/csv")
+            st.download_button("Exportar proveedores", csv_p, "proveedores.csv", "text/csv")
 
             top10p = pshow.nlargest(10,"Alertas_Rojas")
             if not top10p.empty and top10p["Alertas_Rojas"].sum() > 0:

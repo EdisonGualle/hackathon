@@ -3,8 +3,11 @@ Modelo Supervisado — Random Forest con Etiqueta Sintética
 Implementa la sección 9 del reto: 'Machine Learning supervisado —
 Predicción de probabilidad de posible fraude usando etiqueta simulada.'
 
-La etiqueta se genera a partir del score de reglas (≥76 → fraude posible)
-dado que el dataset no incluye etiqueta_fraude_simulada explícita.
+El dataset no incluye etiqueta_fraude_simulada explícita, por lo que se usa una
+ETIQUETA PROXY: anomalía estadística (Isolation Forest interno ≥60) combinada con
+la presencia de señales/reglas críticas. Esto no es ground truth de fraude real,
+así que las métricas (AUC/F1) son referenciales para trazabilidad del modelo, no
+una validación contra fraude confirmado.
 """
 
 import numpy as np
