@@ -8,8 +8,7 @@ Detén todo con Ctrl + C.
 
 Requisitos (una sola vez):
     pip install pyngrok
-El token de ngrok se toma de la variable de entorno NGROK_TOKEN si existe;
-si no, usa el token incluido en el proyecto.
+El token de ngrok se toma de la variable de entorno NGROK_TOKEN.
 """
 
 import os
@@ -20,8 +19,8 @@ import subprocess
 
 PORT = 8501
 
-# Token: preferir variable de entorno (más seguro); si no, el del proyecto.
-NGROK_TOKEN = os.getenv("NGROK_TOKEN", "2xDzWy3i6iogkWGpKT9JPa4QpCg_5YGZ16Se4ybELrKFscvjv")
+# Token de ngrok. No lo dejes escrito en el repositorio.
+NGROK_TOKEN = os.getenv("NGROK_TOKEN", "")
 
 
 def _puerto_arriba(port: int) -> bool:
@@ -60,6 +59,11 @@ def main():
         from pyngrok import ngrok, conf
     except ImportError:
         print("\nFalta pyngrok. Instálalo con:  pip install pyngrok\n")
+        streamlit_proc.terminate()
+        return
+
+    if not NGROK_TOKEN:
+        print("\nFalta NGROK_TOKEN. Defínelo en tu entorno o archivo .env antes de abrir el túnel.\n")
         streamlit_proc.terminate()
         return
 
