@@ -145,7 +145,7 @@ def train_model(sheets: dict, contamination: float = 0.30) -> dict:
         n_estimators=200,
         contamination=contamination,
         random_state=42,
-        n_jobs=-1,
+        n_jobs=1,  # secuencial: evita picos de RAM en hosts con poca memoria (Streamlit Cloud)
     )
     model.fit(X)
 

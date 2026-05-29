@@ -13,7 +13,7 @@ una validación contra fraude confirmado.
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.metrics import (
     roc_auc_score, roc_curve, confusion_matrix,
     precision_score, recall_score, f1_score,
@@ -59,21 +59,30 @@ def train_random_forest(sheets: dict, scores_df: pd.DataFrame) -> dict:
     y = ((iso_norm_scores >= 60) & ((n_alerts["N_Alertas"] >= 1) | n_alerts["Tiene_Critica"])).astype(int).values
 
     # Modelo
+    # n_jobs=1 a propósito: en entornos con poca RAM (p. ej. Streamlit Community
+    # Cloud, ~1 GB) n_jobs=-1 abre muchos procesos worker y dispara la memoria,
+    # tumbando el contenedor. El dataset es pequeño, así que secuencial es rápido.
     rf = RandomForestClassifier(
         n_estimators=300,
         max_depth=8,
         min_samples_leaf=4,
         class_weight="balanced",
         random_state=42,
-        n_jobs=-1,
+        n_jobs=1,
     )
 
-    # Cross-validation estratificada 5-fold
+    # Cross-validation estratificada 5-fold — una sola pasada con todas las
+    # métricas (antes eran 4 llamadas = entrenar el bosque 20 veces; ahora 5).
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    cv_auc = cross_val_score(rf, X_sc, y, cv=cv, scoring="roc_auc", n_jobs=-1)
-    cv_f1  = cross_val_score(rf, X_sc, y, cv=cv, scoring="f1",      n_jobs=-1)
-    cv_pre = cross_val_score(rf, X_sc, y, cv=cv, scoring="precision",n_jobs=-1)
-    cv_rec = cross_val_score(rf, X_sc, y, cv=cv, scoring="recall",   n_jobs=-1)
+    cv_res = cross_validate(
+        rf, X_sc, y, cv=cv,
+        scoring=["roc_auc", "f1", "precision", "recall"],
+        n_jobs=1,
+    )
+    cv_auc = cv_res["test_roc_auc"]
+    cv_f1  = cv_res["test_f1"]
+    cv_pre = cv_res["test_precision"]
+    cv_rec = cv_res["test_recall"]
 
     # Fit final
     rf.fit(X_sc, y)
