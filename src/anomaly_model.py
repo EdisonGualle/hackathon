@@ -4,9 +4,36 @@ Detecta siniestros atípicos que las reglas de negocio podrían no capturar.
 Complementa el score basado en reglas con un score estadístico de rareza.
 """
 
+import os
+import json
+from functools import lru_cache
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
+
+
+@lru_cache(maxsize=1)
+def _provincia_lines():
+    """Coordenadas (lon, lat) de los límites provinciales de Ecuador para dibujarlos
+    como líneas de fondo en el mapa. Devuelve ([], []) si no está el GeoJSON."""
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "data", "ecuador_provincias.geojson")
+    lons, lats = [], []
+    try:
+        with open(path, encoding="utf-8") as f:
+            gj = json.load(f)
+        for feat in gj.get("features", []):
+            geom = feat.get("geometry", {}) or {}
+            coords = geom.get("coordinates", [])
+            polys = [coords] if geom.get("type") == "Polygon" else coords
+            for poly in polys:
+                for ring in poly:
+                    for pt in ring:
+                        lons.append(pt[0]); lats.append(pt[1])
+                    lons.append(None); lats.append(None)
+    except Exception:
+        return [], []
+    return lons, lats
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -219,13 +246,21 @@ def build_ecuador_map(
 
     nivel_color = {"ROJO": "#E74C3C", "AMARILLO": "#F39C12", "VERDE": "#27AE60"}
 
-    # Calcular nivel predominante de cada ciudad (cuál nivel tiene más casos)
+    # Color de cada ciudad por CONCENTRACIÓN DE RIESGO (% de rojos), no por
+    # nivel predominante — así las ciudades con más alertas resaltan en rojo
+    # en vez de verse casi todas verdes.
     grp["Verdes"] = grp["Total"] - grp["Rojos"] - grp["Amarillos"]
 
-    def _nivel_predominante(r):
-        counts = {"ROJO": r["Rojos"], "AMARILLO": r["Amarillos"], "VERDE": r["Verdes"]}
-        return max(counts, key=counts.get)
-    grp["Nivel_Ciudad"] = grp.apply(_nivel_predominante, axis=1)
+    def _nivel_riesgo(r):
+        total = max(int(r["Total"]), 1)
+        pct_rojo = r["Rojos"] / total * 100
+        pct_riesgo = (r["Rojos"] + r["Amarillos"]) / total * 100
+        if pct_rojo >= 25:
+            return "ROJO"
+        if pct_rojo >= 8 or pct_riesgo >= 30:
+            return "AMARILLO"
+        return "VERDE"
+    grp["Nivel_Ciudad"] = grp.apply(_nivel_riesgo, axis=1)
 
     nivel_to_col = {"ROJO": "Rojos", "AMARILLO": "Amarillos", "VERDE": "Verdes"}
     traces = []
@@ -257,10 +292,10 @@ def build_ecuador_map(
                 )
             if not lats:
                 continue
-            emoji = {"ROJO":"🔴","AMARILLO":"🟡","VERDE":"🟢"}[nivel]
+            _lbl = {"ROJO":"Alta concentración","AMARILLO":"Riesgo medio","VERDE":"Bajo riesgo"}[nivel]
             traces.append(go.Scattergeo(
                 lat=lats, lon=lons,
-                name=f"{emoji} {nivel} predominante",
+                name=_lbl,
                 hovertext=hovers, hoverinfo="text",
                 mode="markers+text", text=names,
                 textposition="top center",
@@ -305,7 +340,7 @@ def build_ecuador_map(
         if lats:
             traces.append(go.Scattergeo(
                 lat=lats, lon=lons,
-                name=f"{emoji} {filter_nivel}",
+                name=filter_nivel.capitalize(),
                 hovertext=hovers, hoverinfo="text",
                 mode="markers+text", text=names,
                 textposition="top center",
@@ -313,6 +348,15 @@ def build_ecuador_map(
                 marker=dict(size=sizes, color=color, opacity=0.80,
                             line=dict(width=1.2, color="white")),
             ))
+
+    # Líneas de provincias de Ecuador como fondo (debajo de las ciudades)
+    _plons, _plats = _provincia_lines()
+    if _plons:
+        traces.insert(0, go.Scattergeo(
+            lon=_plons, lat=_plats, mode="lines",
+            line=dict(width=0.6, color="#B7C2D0"),
+            hoverinfo="skip", showlegend=False,
+        ))
 
     fig = go.Figure(data=traces)
     title_text = "Distribución de Alertas por Ciudad — Ecuador"

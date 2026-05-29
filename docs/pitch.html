@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRAUDIA · Presentación Ejecutiva · hackIAthon 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A1A2F; --ink-2:#0E2440; --ink-3:#13304F;
+    --paper:#F3ECDF; --paper-2:#E9DECB;
+    --fog:#C9D6E6; --fog-2:#8DA3BF; --mute:#5B708A;
+    --line:rgba(201,214,230,.16);
+    --red:#E2553D; --red-soft:#F2856E;
+    --gold:#E0A94B; --teal:#3FB6A8; --green:#46B27A;
+    --cyan:#56C7D6;
+    --disp:'Fraunces',Georgia,serif;
+    --body:'Archivo',system-ui,sans-serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box;
+     -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html{ background:#060d18; }
+  body{ font-family:var(--body); color:var(--fog); }
+
+  /* ─── Slide base: A4 apaisado, 1 por página ─── */
+  .deck{ display:flex; flex-direction:column; align-items:center; gap:26px; padding:34px 0; }
+  .slide{
+    position:relative; width:297mm; height:209mm; overflow:hidden;
+    background:var(--ink); color:var(--fog);
+    display:flex; flex-direction:column; justify-content:center;
+    padding:22mm 24mm; box-shadow:0 30px 80px rgba(0,0,0,.5);
+  }
+  .slide::after{ /* grano sutil */
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:3px 3px;
+  }
+  /* franja diagonal de acento */
+  .slide .corner{ position:absolute; top:0; right:0; width:140px; height:140px;
+    background:linear-gradient(135deg,transparent 50%,var(--red) 50%); opacity:.9; }
+
+  .kicker{ font-family:var(--mono); font-size:11px; letter-spacing:.32em;
+    text-transform:uppercase; color:var(--red-soft); margin-bottom:18px; }
+  .foot{ position:absolute; bottom:13mm; left:24mm; right:24mm;
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--mono); font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--fog-2);
+    border-top:1px solid var(--line); padding-top:9px; }
+
+  h1{ font-family:var(--disp); font-weight:900; color:#fff; line-height:.96;
+    letter-spacing:-.02em; }
+  h2{ font-family:var(--disp); font-weight:600; color:#fff; line-height:1.02;
+    letter-spacing:-.015em; font-size:46px; }
+  h2 em{ font-style:italic; color:var(--gold); }
+  p.lead{ font-size:19px; line-height:1.5; color:var(--fog); max-width:60ch; }
+  .accentline{ width:62px; height:4px; background:var(--red); margin:20px 0 26px; }
+
+  /* ─── Portada ─── */
+  .cover{ background:
+      radial-gradient(120% 90% at 85% 10%, rgba(226,85,61,.20), transparent 55%),
+      radial-gradient(90% 80% at 10% 100%, rgba(86,199,214,.12), transparent 50%),
+      var(--ink); }
+  .brandmark{ display:flex; align-items:center; gap:16px; margin-bottom:40px; }
+  .logo{ width:62px; height:62px; border-radius:16px;
+    background:linear-gradient(140deg,#1A6FB5,#56C7D6);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--disp); font-weight:900; font-size:34px; color:#fff;
+    box-shadow:0 10px 30px rgba(26,111,181,.4); }
+  .cover h1{ font-size:104px; }
+  .cover .tag{ font-family:var(--disp); font-style:italic; font-weight:400;
+    font-size:30px; color:var(--gold); margin-top:6px; }
+  .cover .sub{ font-size:17px; color:var(--fog); margin-top:26px; max-width:54ch; line-height:1.5; }
+  .pill-row{ display:flex; gap:10px; margin-top:30px; flex-wrap:wrap; }
+  .pill{ font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    padding:7px 14px; border:1px solid var(--line); border-radius:999px; color:var(--fog); }
+  .pill.hot{ border-color:var(--red); color:var(--red-soft); }
+
+  /* ─── grids / data ─── */
+  .cols{ display:grid; gap:30px; }
+  .c2{ grid-template-columns:1fr 1fr; }
+  .c3{ grid-template-columns:repeat(3,1fr); }
+  .stat{ }
+  .stat .n{ font-family:var(--disp); font-weight:900; font-size:62px; color:#fff; line-height:1; }
+  .stat .n.red{ color:var(--red-soft); } .stat .n.gold{ color:var(--gold); }
+  .stat .n.teal{ color:var(--teal); }
+  .stat .l{ font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--fog-2); margin-top:8px; }
+  .card{ border:1px solid var(--line); border-radius:14px; padding:22px 24px; background:rgba(255,255,255,.02); }
+  .card h3{ font-family:var(--body); font-weight:700; color:#fff; font-size:17px; margin-bottom:8px; }
+  .card p{ font-size:14.5px; line-height:1.5; color:var(--fog); }
+  .tagnum{ font-family:var(--mono); color:var(--red-soft); font-size:13px; font-weight:700; }
+  ul.clean{ list-style:none; display:flex; flex-direction:column; gap:14px; }
+  ul.clean li{ font-size:16px; line-height:1.45; padding-left:26px; position:relative; color:var(--fog); }
+  ul.clean li::before{ content:"→"; position:absolute; left:0; color:var(--red); font-weight:700; }
+  ul.clean li b{ color:#fff; }
+
+  /* pipeline */
+  .pipe{ display:flex; align-items:stretch; gap:0; margin-top:10px; }
+  .step{ flex:1; border:1px solid var(--line); border-radius:12px; padding:16px 14px;
+    background:rgba(255,255,255,.02); position:relative; }
+  .step + .step{ margin-left:30px; }
+  .step + .step::before{ content:"→"; position:absolute; left:-23px; top:50%; transform:translateY(-50%);
+    color:var(--red); font-weight:700; font-size:18px; }
+  .step .s-k{ font-family:var(--mono); font-size:10px; letter-spacing:.1em; color:var(--cyan); text-transform:uppercase; }
+  .step .s-t{ color:#fff; font-weight:700; font-size:15px; margin:6px 0 4px; }
+  .step .s-d{ font-size:12.5px; line-height:1.4; color:var(--fog-2); }
+
+  /* semáforo */
+  .sema{ display:flex; gap:16px; margin-top:6px; }
+  .lvl{ flex:1; border-radius:14px; padding:18px 20px; color:#fff; }
+  .lvl.r{ background:linear-gradient(135deg,#C0392B,#8E2A20); }
+  .lvl.a{ background:linear-gradient(135deg,#C98A1E,#8A5E12); }
+  .lvl.v{ background:linear-gradient(135deg,#1E8F63,#0F5C40); }
+  .lvl .rng{ font-family:var(--mono); font-size:12px; opacity:.85; }
+  .lvl .nm{ font-family:var(--disp); font-weight:900; font-size:26px; margin:4px 0; }
+  .lvl .ac{ font-size:13px; line-height:1.35; opacity:.95; }
+
+  /* light slide */
+  .light{ background:var(--paper); color:#2A2017; }
+  .light::after{ opacity:.4; background-image:radial-gradient(rgba(0,0,0,.04) 1px,transparent 1px); }
+  .light h2{ color:#1C140C; } .light h2 em{ color:var(--red); }
+  .light .kicker{ color:var(--red); }
+  .light .foot{ color:#8a7c66; border-color:rgba(0,0,0,.12); }
+  .light .stat .n{ color:#1C140C; } .light .stat .n.red{ color:var(--red); }
+  .light .stat .n.teal{ color:#137a5c; } .light .stat .n.gold{ color:#b07d18; }
+  .light .stat .l{ color:#8a7c66; }
+  .light .card{ border-color:rgba(0,0,0,.12); background:rgba(255,255,255,.5); }
+  .light .card h3{ color:#1C140C; } .light .card p{ color:#4a3f30; }
+  .light p.lead{ color:#3a3024; }
+  .light ul.clean li{ color:#3a3024; } .light ul.clean li b{ color:#1C140C; }
+
+  .two{ display:grid; grid-template-columns:1.15fr .85fr; gap:40px; align-items:center; }
+  .rule{ height:1px; background:var(--line); margin:20px 0; }
+
+  /* tabla pruebas de fuego */
+  table.qa{ width:100%; border-collapse:collapse; margin-top:6px; }
+  table.qa td{ padding:13px 0; border-bottom:1px solid var(--line); vertical-align:top; font-size:14.5px; line-height:1.45; }
+  table.qa td.q{ width:42%; color:#fff; font-weight:600; padding-right:24px; }
+  table.qa td.a{ color:var(--fog); }
+
+  @media print{
+    html,body{ background:#fff; }
+    .deck{ gap:0; padding:0; }
+    .slide{ box-shadow:none; break-after:page; page-break-after:always; }
+    .slide:last-child{ break-after:auto; }
+  }
+  @page{ size:297mm 210mm; margin:0; }
+
+  /* hint en pantalla */
+  .hint{ position:fixed; bottom:16px; right:16px; z-index:99; font-family:var(--mono);
+    font-size:11px; color:#9fb2c9; background:#0E2440; border:1px solid var(--line);
+    padding:10px 14px; border-radius:10px; max-width:300px; line-height:1.5; }
+  @media print{ .hint{ display:none; } }
+</style>
+</head>
+<body>
+<div class="hint">Para PDF: <b>Ctrl/Cmd + P</b> → Destino <b>Guardar como PDF</b> → Orientación <b>Horizontal</b> → Márgenes <b>Ninguno</b> → activar <b>Gráficos de fondo</b>.</div>
+
+<div class="deck">
+
+  <!-- 1 · PORTADA -->
+  <section class="slide cover">
+    <span class="corner"></span>
+    <div class="brandmark">
+      <div class="logo">F</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--fog-2)">
+        hackIAthon 2026<br><span style="color:var(--red-soft)">Reto · Aseguradora del Sur</span>
+      </div>
+    </div>
+    <h1>FRAUDIA</h1>
+    <div class="tag">inteligencia antifraude en siniestros</div>
+    <p class="sub">Sistema híbrido de IA que asigna un <b style="color:#fff">score de riesgo explicable</b> a cada siniestro y genera <b style="color:#fff">alertas de revisión</b> para el analista. No acusa: prioriza.</p>
+    <div class="pill-row">
+      <span class="pill hot">Reglas RF-01…07</span>
+      <span class="pill">Isolation Forest</span>
+      <span class="pill">Random Forest</span>
+      <span class="pill">RAG + NLP</span>
+      <span class="pill">Streamlit · FastAPI</span>
+    </div>
+    <div class="foot"><span>Presentación ejecutiva</span><span>Equipo: DevMinds</span></div>
+  </section>
+
+  <!-- 2 · PROBLEMA -->
+  <section class="slide">
+    <span class="corner"></span>
+    <div class="kicker">01 · Problema y oportunidad</div>
+    <h2>La detección manual de fraude es <em>lenta, dispersa y poco trazable</em>.</h2>
+    <div class="accentline"></div>
+    <div class="two">
+      <ul class="clean">
+        <li>El analista cruza a mano pólizas, documentos, fechas, montos e historial: <b>horas por caso</b>.</li>
+        <li>Las señales aparecen al <b>cruzar variables</b>, no en una revisión individual.</li>
+        <li>Sin un score homogéneo, la <b>priorización depende de la experiencia</b> de cada persona.</li>
+      </ul>
+      <div class="card">
+        <h3>La oportunidad</h3>
+        <p>En este portafolio sintético de 500 siniestros, <b style="color:var(--red-soft)">$2.38 M</b> del monto reclamado proviene de casos que requieren revisión. Detectarlos a tiempo es ahorro directo.</p>
+      </div>
+    </div>
+    <div class="foot"><span>FRAUDIA · Aseguradora del Sur</span><span>02 / 11</span></div>
+  </section>
+
+  <!-- 3 · SOLUCIÓN -->
+  <section class="slide">
+    <span class="corner"></span>
+    <div class="kicker">02 · Solución propuesta</div>
+    <h2>Un copiloto antifraude que <em>puntúa, explica y prioriza</em>.</h2>
+    <div class="accentline"></div>
+    <p class="lead" style="margin-bottom:26px">FRAUDIA combina cuatro motores de IA en un solo score 0–100 con semáforo Verde / Amarillo / Rojo, y un agente que responde en lenguaje natural sobre cualquier caso.</p>
+    <div class="cols c3">
+      <div class="card"><span class="tagnum">01</span><h3>Reglas de negocio</h3><p>7 reglas críticas (RF-01…07) + 14 señales con puntaje, fieles al reto.</p></div>
+      <div class="card"><span class="tagnum">02</span><h3>Anomalías + ML</h3><p>Isolation Forest detecta lo atípico; Random Forest estima probabilidad de fraude.</p></div>
+      <div class="card"><span class="tagnum">03</span><h3>NLP + documentos</h3><p>Lectura de PDFs (parte, declaración, factura), validación cruzada y narrativas clonadas.</p></div>
+    </div>
+    <div class="foot"><span>FRAUDIA · Aseguradora del Sur</span><span>03 / 11</span></div>
+  </section>
+
+  <!-- 4 · DEMO -->
+  <section class="slide">
+    <span class="corner"></span>
+    <div class="kicker">03 · Demo en vivo · 4 min</div>
+    <h2>Lo que verán <em>en pantalla</em>.</h2>
+    <div class="accentline"></div>
+    <div class="two">
+      <ul class="clean">
+        <li><b>Dashboard:</b> 500 siniestros puntuados, mapa de Ecuador y simulación de ahorro.</li>
+        <li><b>Expediente 360°:</b> abrir un caso Rojo y ver el desglose de señales + validación PDF vs Excel.</li>
+        <li><b>Agente IA:</b> «¿Qué proveedores concentran las alertas rojas?» en lenguaje natural.</li>
+        <li><b>Cargar documento:</b> subir un siniestro a 24 h de la póliza → se marca Amarillo (RF-05).</li>
+      </ul>
+      <div class="card" style="border-color:var(--red);background:rgba(226,85,61,.07)">
+        <h3 style="color:var(--red-soft)">Pruebas de fuego listas</h3>
+        <p>Consulta agéntica · prueba de score en vivo · verificación del repositorio en GitHub. Todo responde sobre datos reales del dataset.</p>
+      </div>
+    </div>
+    <div class="foot"><span>FRAUDIA · Aseguradora del Sur</span><span>04 / 11</span></div>
+  </section>
+
+  <!-- 5 · ARQUITECTURA -->
+  <section class="slide">
+    <span class="corner"></span>
+    <div class="kicker">04 · Arquitectura · 2 min</div>
+    <h2>De los datos a la <em>alerta explicable</em>.</h2>
+    <div class="accentline"></div>
+    <div class="pipe">
+      <div class="step"><div class="s-k">Ingesta</div><div class="s-t">Excel + 26 PDFs</div><div class="s-d">5 hojas · pdfplumber extrae parte, declaración y factura.</div></div>
+      <div class="step"><div class="s-k">Features</div><div class="s-t">Cruce + señales</div><div class="s-d">Validación cruzada PDF↔Excel y 14 señales de riesgo.</div></div>
+      <div class="step"><div class="s-k">Motores IA</div><div class="s-t">Reglas + IF + RF</div><div class="s-d">Score combinado 50% reglas / 25% IF / 25% RF.</div></div>
+      <div class="step"><div class="s-k">Entrega</div><div class="s-t">UI + Agente + API</div><div class="s-d">Streamlit, agente RAG y API REST FastAPI.</div></div>
+    </div>
+    <div class="rule"></div>
+    <p class="lead">Capas desacopladas (<span style="font-family:var(--mono);color:var(--cyan)">src/</span> lógica · <span style="font-family:var(--mono);color:var(--cyan)">app.py</span> UI), caché en disco y código modular con pruebas — listo para escalar.</p>
+    <div class="foot"><span>FRAUDIA · Aseguradora del Sur</span><span>05 / 11</span></div>
+  </section>
+
+  <!-- 6 · USO DE IA -->
+  <section class="slide">
+    <span class="corner"></span>
+    <div class="kicker">05 · Uso de IA · enfoque híbrido</div>
+    <h2>Cuatro motores, <em>una sola decisión</em>.</h2>
+    <div class="accentline"></div>
+    <div class="cols c2" style="gap:22px 30px">
+      <div class="card"><h3>Reglas de negocio</h3><p>RF-01…04 fuerzan Rojo; RF-05…07 fuerzan Amarillo. Transparentes y auditables.</p></div>
+      <div class="card"><h3>Isolation Forest</h3><p>Detección no supervisada de casos fuera del comportamiento esperado (score de rareza).</p></div>
+      <div class="card"><h3>Random Forest</h3><p>Probabilidad de posible fraude con etiqueta proxy — métricas referenciales y trazables.</p></div>
+      <div class="card"><h3>NLP + Agente RAG</h3><p>TF-IDF para narrativas clonadas + sentence-transformers · FAISS · Groq para responder en lenguaje natural.</p></div>
+    </div>
+    <div class="foot"><span>FRAUDIA · Aseguradora del Sur</span><span>06 / 11</span></div>
+  </section>
+
+  <!-- 7 · SCORE Y REGLAS -->
+  <section class="slide">
+    <span class="corner"></span>
+    <div class="kicker">06 · Score de riesgo</div>
+    <h2>Un semáforo que el analista <em>entiende y puede defender</em>.</h2>
+    <div class="accentline"></div>
+    <div class="sema">
+      <div class="lvl v"><div class="rng">0 – 40</div><div class="nm">Verde</div><div class="ac">Flujo normal de procesamiento.</div></div>
+      <div class="lvl a"><div class="rng">41 – 75</div><div class="nm">Amarillo</div><div class="ac">Escalar a revisión documental.</div></div>
+      <div class="lvl r"><div class="rng">76 – 100</div><div class="nm">Rojo</div><div class="ac">Unidad Antifraude · revisión de campo.</div></div>
+    </div>
+    <div class="rule"></div>
+    <p class="lead">Cada alerta cita la <b style="color:#fff">regla o señal</b> que la disparó (ej. «RF-01 Pérdida Total por Robo» o «RF-07 narrativa clonada 91%»). Nada de caja negra.</p>
+    <div class="foot"><span>FRAUDIA · Aseguradora del Sur</span><span>07 / 11</span></div>
+  </section>
+
+  <!-- 8 · IMPACTO (light) -->
+  <section class="slide light">
+    <span class="corner"></span>
+    <div class="kicker">07 · Impacto de negocio · 1 min</div>
+    <h2>Resultados sobre <em>500 siniestros</em>.</h2>
+    <div class="accentline"></div>
+    <div class="cols c3" style="margin-bottom:30px">
+      <div class="stat"><div class="n red">168</div><div class="l">Críticos (34%) · Rojo</div></div>
+      <div class="stat"><div class="n gold">29</div><div class="l">En revisión (6%) · Amarillo</div></div>
+      <div class="stat"><div class="n teal">303</div><div class="l">Bajo riesgo (61%) · Verde</div></div>
+    </div>
+    <div class="cols c3">
+      <div class="stat"><div class="n">$5.28M</div><div class="l">Monto total reclamado</div></div>
+      <div class="stat"><div class="n red">$2.38M</div><div class="l">Monto en riesgo (45%)</div></div>
+      <div class="stat"><div class="n teal">$475K</div><div class="l">Ahorro potencial (20%)</div></div>
+    </div>
+    <div class="foot"><span>FRAUDIA · Aseguradora del Sur</span><span>08 / 11</span></div>
+  </section>
+
+  <!-- 9 · ÉTICA -->
+  <section class="slide">
+    <span class="corner"></span>
+    <div class="kicker">08 · Ética y limitaciones · 1 min</div>
+    <h2>Alertas, <em>no acusaciones</em>.</h2>
+    <div class="accentline"></div>
+    <div class="two">
+      <ul class="clean">
+        <li>El sistema <b>nunca rechaza</b> un siniestro ni acusa: la decisión es del analista humano.</li>
+        <li>Datos <b>100% sintéticos</b>, sin información personal real ni credenciales expuestas.</li>
+        <li>Tasa estimada de <b>falsos positivos 15–20%</b>, declarada abiertamente.</li>
+      </ul>
+      <div class="card"><h3>Mitigación de sesgo</h3><p>Variables explicables, score auditable por regla y análisis de sesgo por ramo y sucursal disponible en la propia app.</p></div>
+    </div>
+    <div class="foot"><span>FRAUDIA · Aseguradora del Sur</span><span>09 / 11</span></div>
+  </section>
+
+  <!-- 10 · ROADMAP -->
+  <section class="slide">
+    <span class="corner"></span>
+    <div class="kicker">09 · Próximos pasos</div>
+    <h2>De prototipo a <em>producción</em>.</h2>
+    <div class="accentline"></div>
+    <div class="cols c3">
+      <div class="card"><span class="tagnum">→</span><h3>Etiqueta real</h3><p>Reemplazar la etiqueta proxy por casos de fraude confirmados para validar el modelo supervisado.</p></div>
+      <div class="card"><span class="tagnum">→</span><h3>Integración</h3><p>Conectar la API REST al core de siniestros y a la base Oracle de la aseguradora.</p></div>
+      <div class="card"><span class="tagnum">→</span><h3>Feedback humano</h3><p>Que la decisión del analista reentrene y calibre el score (human-in-the-loop).</p></div>
+    </div>
+    <div class="foot"><span>FRAUDIA · Aseguradora del Sur</span><span>10 / 11</span></div>
+  </section>
+
+  <!-- 11 · CIERRE + APÉNDICE QA -->
+  <section class="slide cover">
+    <span class="corner"></span>
+    <div class="kicker">10 · Cierre</div>
+    <h2 style="font-size:54px;margin-bottom:6px">Prioriza el riesgo.<br><em>Respeta a las personas.</em></h2>
+    <div class="accentline"></div>
+    <table class="qa">
+      <tr><td class="q">¿Cómo detectan narrativas similares?</td><td class="a">TF-IDF + similitud coseno; &gt;85% dispara RF-07 (clonada).</td></tr>
+      <tr><td class="q">¿Cómo ayuda al analista a decidir más rápido?</td><td class="a">Semáforo + score explicable por regla + bandeja priorizada y ahorro estimado.</td></tr>
+      <tr><td class="q">¿Cómo evitan acusar injustamente?</td><td class="a">Solo alertas; revisión humana obligatoria; falsos positivos declarados.</td></tr>
+    </table>
+    <div class="foot"><span>github.com/EdisonGualle/hackathon</span><span>FRAUDIA · hackIAthon 2026</span></div>
+  </section>
+
+</div>
+</body>
+</html>

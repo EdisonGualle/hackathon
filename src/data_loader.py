@@ -45,13 +45,14 @@ EXPECTED_SHEETS = {
 
 def load_excel(path=None):
     path = path or DEFAULT_EXCEL
-    xl = pd.ExcelFile(path)
     sheets = {}
-    for name in xl.sheet_names:
-        if name == "README":
-            continue
-        sheets[name] = pd.read_excel(path, sheet_name=name, dtype=str)
-        sheets[name] = sheets[name].fillna("")
+    # Usar context manager para CERRAR el handle del archivo (si no, en Windows
+    # queda bloqueado y os.unlink del temporal lanza WinError 32).
+    with pd.ExcelFile(path) as xl:
+        for name in xl.sheet_names:
+            if name == "README":
+                continue
+            sheets[name] = pd.read_excel(xl, sheet_name=name, dtype=str).fillna("")
     return sheets
 
 

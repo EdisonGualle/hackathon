@@ -34,14 +34,14 @@ from src.data_loader import (
 from src.pdf_extractor import extract_text, detect_doc_type, extract_sin_id, extract_fields
 from src.fraud_rules import score_siniestro, calculate_scores_batch
 from src.cross_validator import cross_validate
-from src.network_graph import build_graph
+# build_graph (networkx) se importa de forma diferida dentro de la página Red Relacional
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="FRAUDIA · Antifraude IA",
     page_icon="",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 # ── CSS: Sistema de diseño corporativo "Aseguradora del Sur" ──────────────────
@@ -53,9 +53,9 @@ st.markdown("""
   /* superficies */
   --surface:#FFFFFF; --surface-2:#F6F8FC; --surface-3:#EEF4FA;
   --bg-app:#F6F8FC;
-  /* sidebar oscuro */
-  --bg-sidebar:#0E1C2F; --bg-sidebar-2:#162B45; --bg-hover:#1A3050;
-  --text-sidebar:#C8D9EC; --text-sidebar-muted:#7E93AC;
+  /* sidebar oscuro (slate suave, menos azul intenso) */
+  --bg-sidebar:#222C38; --bg-sidebar-2:#2C3845; --bg-hover:#333F4D;
+  --text-sidebar:#CFD8E2; --text-sidebar-muted:#8A97A6;
   /* texto */
   --navy-900:#0A2A45; --navy-800:#0F2544; --navy-700:#13456E; --navy-600:#1B5A8C;
   --ink:#0F2544; --muted:#4A6080; --faint:#8FA3BA;
@@ -83,6 +83,18 @@ html, body, .stApp { background:var(--bg-app) !important; }
   font-family:var(--font); color:var(--ink);
 }
 code, kbd, .mono { font-family:var(--font-mono) !important; }
+/* Restaurar la fuente de ICONOS de Streamlit (Material Symbols) — si no, salen como
+   texto: "expand_more", "keyboard_double_arrow_right", etc. */
+[data-testid="stIconMaterial"],
+[data-testid="stExpanderToggleIcon"],
+[data-testid="stSidebarCollapseButton"] *,
+[data-testid="stExpandSidebarButton"] *,
+[data-testid="collapsedControl"] *,
+[data-testid="stToolbar"] [data-testid="stIconMaterial"],
+span.material-symbols-rounded, span.material-symbols-outlined,
+.material-icons {
+  font-family:'Material Symbols Rounded' !important;
+}
 .main .block-container { padding-top:1.4rem; padding-bottom:3rem; max-width:1340px; }
 section[data-testid="stMain"]{ background:var(--bg-app) !important; }
 
@@ -247,7 +259,9 @@ hr{ border-color:var(--border) !important; margin:1rem 0 !important; }
   border:1px solid var(--accent) !important; border-radius:9px !important;
   font-weight:600 !important; font-size:.88rem !important; padding:.5rem 1rem !important;
   transition:all .15s var(--ease); box-shadow:var(--shadow-sm);
+  white-space:nowrap !important;
 }
+.stButton>button p{ white-space:nowrap !important; }
 .stButton>button:hover{ background:var(--accent-hover) !important; border-color:var(--accent-hover) !important;
   transform:translateY(-1px); box-shadow:var(--shadow-md); }
 .stButton>button:active{ transform:translateY(0); }
@@ -358,6 +372,40 @@ hr{ border-color:var(--border) !important; margin:1rem 0 !important; }
 ::-webkit-scrollbar{ width:10px; height:10px; }
 ::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:6px; }
 ::-webkit-scrollbar-thumb:hover{ background:var(--blue-300); }
+
+/* ══ POPOVER "Guía de pantalla" — no partir el texto del botón ══ */
+[data-testid="stPopover"] button, [data-testid="stPopoverButton"]{
+  white-space:nowrap !important; min-width:max-content !important;
+  font-size:.8rem !important; padding:.35rem .7rem !important;
+}
+[data-testid="stPopover"]{ display:flex; justify-content:flex-end; }
+
+/* ══ RESPONSIVE / MÓVIL ══ */
+@media (max-width: 820px){
+  .main .block-container{ padding:.7rem .8rem 2rem !important; max-width:100% !important; }
+  h1{ font-size:1.5rem !important; }
+  h2{ font-size:1.15rem !important; }
+  h3{ font-size:1rem !important; }
+  .page-head .ttl{ font-size:1.3rem; }
+  .page-head .sub{ font-size:.82rem; }
+  .kpi-box{ padding:13px 9px; }
+  .kpi-val{ font-size:1.5rem; }
+  .kpi-lbl{ font-size:.66rem; }
+  .save-panel{ padding:16px 16px; gap:12px; }
+  .save-item .val{ font-size:1.3rem; }
+  .card{ padding:16px 16px; }
+  .stTabs [data-baseweb="tab"]{ font-size:.76rem; padding:6px 9px; }
+  /* tablas anchas: permitir scroll horizontal en lugar de romper el layout */
+  [data-testid="stDataFrame"]{ overflow-x:auto; }
+  /* burbujas de chat ocupan más ancho en móvil */
+  .chat-user, .chat-bot{ max-width:94% !important; }
+  /* el pie de slide y badges no se salen */
+  .pill-row{ gap:6px; }
+}
+@media (max-width: 480px){
+  .kpi-val{ font-size:1.3rem; }
+  .save-panel{ flex-direction:column; align-items:flex-start; }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -368,6 +416,7 @@ for k, v in {
     "rag": None, "rag_ready": False, "chat_history": [],
     "data_loaded": False, "ml_result": None,
     "rf_result": None, "combined_df": None, "clusters": None,
+    "onboarding_visto": False, "show_tour": False, "tour_step": 0,
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -390,11 +439,39 @@ def _stat_row(color: str, label: str, value: int) -> str:
     )
 
 
-# ── Auto-carga del dataset principal al iniciar ──────────────────────────────
-# Doble caché: en disco (entre arranques) + en memoria (entre reruns/refrescos).
-# 1er arranque ~7 s (lee 24 PDFs una vez) → guarda en disco → siguientes arranques ~1-2 s.
+# ── Carga del dataset (caché doble: disco entre arranques + memoria entre reruns) ──
+# 1er arranque ~7 s (lee 24 PDFs una vez) → guarda en disco → siguientes ~0.01 s.
 import pickle as _pickle, hashlib as _hashlib
 _DS_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cache")
+_DATASET_DIR  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "dataset")
+os.makedirs(_DATASET_DIR, exist_ok=True)
+
+_DISPLAY_NAMES = {
+    "Evento Datasets_Sinteticos_Fraude_500_v2.xlsx": "Dataset Principal · 500 siniestros",
+    "dataset_ficticio_prueba.xlsx": "Dataset Ficticio de Prueba · SIN-9999",
+}
+
+# Datasets que NO se muestran en el selector (datos de prueba internos)
+_DATASETS_OCULTOS = {"dataset_ficticio_prueba.xlsx"}
+
+@st.cache_data(show_spinner=False)
+def _reporte_pdf_bytes(_scores, _sheets, _combined, sig):
+    """Genera el PDF ejecutivo una sola vez por dataset (cacheado)."""
+    from src.report_generator import generate_pdf_report
+    return generate_pdf_report(_scores, _sheets, _combined)
+
+def _list_datasets():
+    """Devuelve (opciones_legibles, mapa_legible→archivo). El dataset PRINCIPAL va primero."""
+    files = [f for f in os.listdir(_DATASET_DIR)
+             if f.endswith((".xlsx", ".xls")) and f not in _DATASETS_OCULTOS]
+    if not files:
+        files = [os.path.basename(DEFAULT_EXCEL)]
+    principal = os.path.basename(DEFAULT_EXCEL)
+    # Ordenar: principal primero, el resto después (alfabético)
+    files = sorted(files, key=lambda f: (f != principal, f.lower()))
+    options = [_DISPLAY_NAMES.get(f, f) for f in files]
+    rev = {_DISPLAY_NAMES.get(f, f): f for f in files}
+    return options, rev
 
 @st.cache_data(show_spinner=False)
 def _cargar_dataset(excel_path: str, docs_folder: str):
@@ -404,14 +481,12 @@ def _cargar_dataset(excel_path: str, docs_folder: str):
         cache_file = os.path.join(_DS_CACHE_DIR, f"ds_{key}.pkl")
     except Exception:
         cache_file = None
-    # Cargar de disco si existe (rápido)
     if cache_file and os.path.exists(cache_file):
         try:
             with open(cache_file, "rb") as f:
                 return _pickle.load(f)
         except Exception:
             pass
-    # Calcular y persistir
     sheets  = load_excel(excel_path)
     pdf_map = map_pdfs(docs_folder)
     scores  = calculate_scores_batch(sheets, pdf_map)
@@ -424,25 +499,144 @@ def _cargar_dataset(excel_path: str, docs_folder: str):
             pass
     return sheets, pdf_map, scores
 
-if not st.session_state.data_loaded:
-    _t_ini = __import__("time").time()
-    _ph = st.empty()
-    _ph.markdown(
-        '<div class="card-azul">Inicializando FRAUDIA · cargando y puntuando siniestros…</div>',
+def _do_load(excel_path: str):
+    """Carga el dataset mostrando una pantalla de progreso. Deja todo listo en session_state."""
+    import time as _t
+    t0 = _t.time()
+    with st.status("Analizando expediente de siniestros…", expanded=True) as _s:
+        st.write("Leyendo el Excel (siniestros, pólizas, asegurados, proveedores)…")
+        st.write("Extrayendo y cruzando documentos PDF…")
+        st.write("Calculando score de riesgo y reglas RF-01…07…")
+        sheets, pdf_map, scores = _cargar_dataset(excel_path, DEFAULT_DOCS)
+        st.session_state.update(
+            sheets=sheets, pdf_map=pdf_map, scores_df=scores,
+            data_loaded=True, rag_ready=False, rag=None,
+        )
+        n = len(scores); rj = int((scores.Nivel == "ROJO").sum())
+        _s.update(label=f"Listo · {n} siniestros · {rj} críticos · {_t.time()-t0:.1f}s",
+                  state="complete", expanded=False)
+    # Lanzar el tour guiado la primera vez
+    if not st.session_state.get("onboarding_visto"):
+        st.session_state.show_tour = True
+        st.session_state.tour_step = 0
+        st.session_state._goto = "Dashboard"
+
+
+# ── Onboarding · Tour guiado (banner que te NAVEGA entre pantallas) ───────────
+# (página_destino, título, texto). Cada paso lleva al usuario a esa pantalla.
+_TOUR = [
+    ("Dashboard", "Bienvenido a FRAUDIA",
+     "Tu copiloto antifraude. Esta es tu pantalla de inicio: **KPIs del portafolio**, mapa de "
+     "Ecuador, simulación de ahorro y la **bandeja de siniestros** filtrable. Pulsa *Siguiente* y te llevo a cada sección."),
+    ("Siniestro", "Expediente del siniestro",
+     "Aquí abres un caso a fondo: **desglose de señales**, score de riesgo y la **validación "
+     "cruzada** entre los PDFs y el Excel (placa, montos, fechas)."),
+    ("Cargar Documento", "Cargar y validar documentos",
+     "Sube un **PDF** (parte, declaración o factura) o un **Excel** y el sistema lo valida contra "
+     "el dataset en tiempo real. Ideal para la prueba en vivo del jurado."),
+    ("Proveedores", "Análisis de proveedores",
+     "Ranking de proveedores por **alertas rojas** y **lista restrictiva**. Responde la pregunta "
+     "«¿qué proveedores concentran el riesgo?»."),
+    ("Agente IA", "Agente IA antifraude",
+     "Pregunta en **lenguaje natural** sobre los casos. Usa una de las 12 preguntas del reto o escribe la tuya."),
+    ("Modelo ML", "Modelos de IA",
+     "Random Forest, Isolation Forest y detección de **narrativas clonadas** — el motor híbrido detrás del score."),
+    ("Red Relacional", "Red relacional",
+     "Grafo que conecta **asegurados ↔ siniestros ↔ proveedores** para descubrir posibles anillos de fraude."),
+    ("Ética", "Ética y límites",
+     "Aquí está lo que **no** hace el sistema: no acusa ni rechaza. Falsos positivos declarados y "
+     "análisis de sesgo. Úsalo para la pregunta de ética del jurado."),
+]
+
+def _fin_tour():
+    st.session_state.show_tour = False
+    st.session_state.onboarding_visto = True
+
+def _render_tour_banner():
+    """Banner-guía dentro de la página (no modal). Navega entre pantallas paso a paso."""
+    import re as _re
+    step = max(0, min(st.session_state.get("tour_step", 0), len(_TOUR) - 1))
+    _, titulo, cuerpo = _TOUR[step]
+    # Convertir **negrita** de markdown a <b> (el banner es HTML crudo)
+    cuerpo = _re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", cuerpo)
+    dots = "".join(
+        f'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 3px;'
+        f'background:{"#fff" if i==step else "rgba(255,255,255,.4)"}"></span>'
+        for i in range(len(_TOUR))
+    )
+    st.markdown(
+        '<div style="background:linear-gradient(135deg,#0E1C2F,#1A4A7A);border-radius:14px;'
+        'padding:16px 20px;margin-bottom:14px;box-shadow:var(--shadow-md)">'
+        f'  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">'
+        f'    <span style="color:#9FD0F0;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase">'
+        f'      Tour guiado · paso {step+1} de {len(_TOUR)}</span>'
+        f'    <span>{dots}</span></div>'
+        f'  <div style="color:#fff;font-weight:800;font-size:1.15rem;margin-top:6px">{titulo}</div>'
+        f'  <div style="color:#D7E6F5;font-size:.92rem;line-height:1.5;margin-top:4px">{cuerpo}</div>'
+        '</div>',
         unsafe_allow_html=True,
     )
-    try:
-        _sheets, _pdf_map, _scores = _cargar_dataset(DEFAULT_EXCEL, DEFAULT_DOCS)
-        st.session_state.update(
-            sheets=_sheets, pdf_map=_pdf_map,
-            scores_df=_scores, data_loaded=True,
-        )
-        _ph.empty()
-        toast(f"Sistema listo en {__import__('time').time()-_t_ini:.1f}s · {len(_scores)} siniestros", "success")
-    except Exception as _e:
-        st.session_state.data_loaded = False
-        _ph.empty()
-        toast("No se pudo inicializar el dataset", "error")
+    c1, c2, c3 = st.columns(3)
+    if step > 0 and c1.button("← Anterior", use_container_width=True, key="tour_prev"):
+        st.session_state.tour_step = step - 1
+        st.session_state._goto = _TOUR[step - 1][0]
+        st.rerun()
+    if step < len(_TOUR) - 1:
+        if c2.button("Siguiente →", type="primary", use_container_width=True, key="tour_next"):
+            st.session_state.tour_step = step + 1
+            st.session_state._goto = _TOUR[step + 1][0]
+            st.rerun()
+    else:
+        if c2.button("Finalizar", type="primary", use_container_width=True, key="tour_done"):
+            _fin_tour(); st.rerun()
+    if c3.button("Saltar tour", use_container_width=True, key="tour_skip"):
+        _fin_tour(); st.rerun()
+
+
+# Guía contextual por pantalla (popover en el encabezado)
+_GUIA = {
+    "Dashboard":
+        "**Qué ves aquí:** KPIs del portafolio, panel de ahorro, mapa de alertas por ciudad "
+        "y la bandeja de siniestros.\n\n**Tips:** usa los filtros (ramo, nivel, sucursal) y el "
+        "buscador SIN-XXXX; exporta a CSV o PDF con los botones inferiores.",
+    "Siniestro":
+        "**Qué ves aquí:** el expediente completo de un siniestro.\n\n**Tips:** elige un caso en "
+        "el selector; revisa el desglose de señales (por qué tiene ese score) y la validación "
+        "cruzada entre los PDFs y el Excel.",
+    "Proveedores":
+        "**Qué ves aquí:** ranking de proveedores por alertas rojas y lista restrictiva.\n\n"
+        "**Tips:** filtra por tipo; las filas resaltadas están en lista restrictiva o concentran "
+        "alertas. Útil para la pregunta «¿qué proveedores concentran el riesgo?».",
+    "Agente IA":
+        "**Qué ves aquí:** un agente que responde sobre los casos en lenguaje natural.\n\n"
+        "**Tips:** pulsa una de las 12 preguntas del reto o escribe la tuya. Con Groq API Key "
+        "responde redactado; sin clave, en modo recuperación.",
+    "Modelo ML":
+        "**Qué ves aquí:** Random Forest, Isolation Forest y narrativas clonadas.\n\n"
+        "**Tips:** entrena cada modelo con su botón. Las métricas (AUC/F1) son referenciales: "
+        "la etiqueta es proxy, no fraude confirmado.",
+    "Red Relacional":
+        "**Qué ves aquí:** grafo que conecta asegurados ↔ siniestros ↔ proveedores.\n\n"
+        "**Tips:** filtra por nivel de riesgo para aislar posibles anillos de fraude.",
+    "Cargar Documento":
+        "**Qué ves aquí:** sube un PDF (parte, declaración, factura) o un Excel y valídalo "
+        "contra el dataset en tiempo real.\n\n**Tips:** ideal para la prueba en vivo de cargar "
+        "un siniestro y explicar su score.",
+    "Ética":
+        "**Qué ves aquí:** límites del sistema, falsos positivos y análisis de sesgo.\n\n"
+        "**Tips:** úsalo para responder la pregunta de ética del jurado.",
+    "Manual":
+        "**Qué ves aquí:** la guía completa de uso del sistema, paso a paso.",
+}
+
+def guia_pantalla(pagina: str):
+    """Popover de ayuda contextual para la pantalla actual."""
+    texto = _GUIA.get(pagina)
+    if not texto:
+        return
+    with st.popover("Guía de pantalla", use_container_width=False):
+        st.markdown(f"**{pagina}**")
+        st.markdown(texto)
 
 
 # ── Modal de Coincidencias (Diálogo Streamlit) ───────────────────────────────
@@ -517,6 +711,10 @@ def mostrar_modal_coincidencia(match_data: dict, row: dict, all_pdf_fields: dict
         st.rerun()
 
 
+# Aplicar navegación pendiente del tour ANTES de instanciar el radio (evita error de widget)
+if st.session_state.get("_goto"):
+    st.session_state["nav_page"] = st.session_state.pop("_goto")
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown(
@@ -535,97 +733,33 @@ with st.sidebar:
         '</div>', unsafe_allow_html=True
     )
 
-    # ── Menú de navegación lateral ────────────────────────────────────
-    _NAV = ["Dashboard", "Siniestro", "Proveedores", "Agente IA", "Modelo ML",
-            "Red Relacional", "Cargar Documento", "Ética", "Manual"]
-    st.radio("Navegación", options=_NAV, key="nav_page", label_visibility="collapsed")
-
-    st.divider()
+    # ── Configuración (siempre disponible) ────────────────────────────
     st.markdown('<div class="nav-section">Configuración</div>', unsafe_allow_html=True)
     groq_key = st.text_input("Groq API Key", type="password",
                               value=os.getenv("GROQ_API_KEY", ""),
                               help="Opcional — gratis en console.groq.com. Sin clave, el agente opera en modo retrieval-only.")
-    st.divider()
-    import os
-    dataset_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "dataset")
-    os.makedirs(dataset_dir, exist_ok=True)
-    excel_files = []
-    if os.path.exists(dataset_dir):
-        excel_files = [f for f in os.listdir(dataset_dir) if f.endswith((".xlsx", ".xls"))]
-        
-    # Mapeo de nombres descriptivos
-    display_names = {
-        "Evento Datasets_Sinteticos_Fraude_500_v2.xlsx": "Dataset Principal (500 Siniestros)",
-        "dataset_ficticio_prueba.xlsx": "Dataset Ficticio de Prueba (SIN-9999)"
-    }
-    
-    if not excel_files:
-        excel_files = [os.path.basename(DEFAULT_EXCEL)]
-        
-    options = [display_names.get(f, f"{f}") for f in excel_files]
-    
-    st.markdown("**Dataset de siniestros**")
-    selected_display = st.selectbox(
-        "Excel del Siniestro",
-        options,
-        index=0 if len(options) > 0 else 0,
-        label_visibility="collapsed"
-    )
-    
-    # Permitir agregar nueva fuente (Excel)
-    with st.expander("Subir nueva fuente (Excel)", expanded=False):
-        uploaded_file = st.file_uploader(
-            "Selecciona un archivo Excel",
-            type=["xlsx", "xls"],
-            key="sidebar_dataset_uploader",
-            label_visibility="collapsed"
-        )
-        if uploaded_file is not None:
-            new_file_path = os.path.join(dataset_dir, uploaded_file.name)
-            try:
-                # Guardar el archivo en el directorio de datasets
-                with open(new_file_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                st.success(f"¡Dataset '{uploaded_file.name}' subido con éxito!")
+
+    if st.session_state.data_loaded:
+        st.divider()
+        st.markdown('<div class="nav-section">Navegación</div>', unsafe_allow_html=True)
+        _NAV = ["Dashboard", "Siniestro", "Proveedores", "Agente IA", "Modelo ML",
+                "Red Relacional", "Cargar Documento", "Ética", "Manual"]
+        st.radio("Navegación", options=_NAV, key="nav_page", label_visibility="collapsed")
+
+        with st.expander("Cambiar dataset", expanded=False):
+            _opts, _rev = _list_datasets()
+            _sel = st.selectbox("Dataset", _opts, label_visibility="collapsed", key="sb_ds")
+            if st.button("Recargar", use_container_width=True, key="sb_reload"):
+                _do_load(os.path.join(_DATASET_DIR, _rev[_sel]))
                 st.rerun()
-            except Exception as e:
-                st.error(f"Error al guardar: {e}")
-    
-    # Resolver ruta del archivo seleccionado
-    reverse_map = {display_names.get(f, f"{f}"): f for f in excel_files}
-    selected_file = reverse_map.get(selected_display, selected_display)
-    excel_path = os.path.join(dataset_dir, selected_file)
-    
-    docs_folder = DEFAULT_DOCS
 
-    if st.button("Cargar Dataset", use_container_width=True, type="primary"):
-        try:
-            with st.status("Procesando dataset…", expanded=True) as status:
-                st.write("Leyendo Excel (5 hojas, 500 siniestros)…")
-                sheets = load_excel(excel_path)
-
-                st.write(f"Escaneando carpetas de PDFs…")
-                pdf_map = map_pdfs(docs_folder)
-                st.write(f"   → {len(pdf_map)} siniestros con documentos vinculados")
-
-                st.write("Calculando scores de riesgo + validación cruzada de PDFs…")
-                scores = calculate_scores_batch(sheets, pdf_map)
-
-                st.session_state.update(
-                    sheets=sheets, pdf_map=pdf_map,
-                    scores_df=scores, data_loaded=True,
-                    rag_ready=False, rag=None,
-                )
-                rj = (scores.Nivel=="ROJO").sum()
-                am = (scores.Nivel=="AMARILLO").sum()
-                vr = (scores.Nivel=="VERDE").sum()
-                st.write(f"Listo: {rj} · {am} · {vr}")
-                status.update(label=f"Dataset cargado — {len(sheets.get('1_Siniestros', []))} siniestros",
-                              state="complete", expanded=False)
-            toast(f"Dataset cargado · {rj+am+vr} siniestros analizados", "success")
-        except Exception as e:
-            st.error(f"Error: {e}")
-            toast("No se pudo cargar el dataset", "error")
+        if st.button("Ver tour guiado", use_container_width=True, key="sb_tour"):
+            st.session_state.tour_step = 0
+            st.session_state.show_tour = True
+            st.session_state._goto = _TOUR[0][0]
+            st.rerun()
+    else:
+        st.caption("Selecciona y carga un dataset en la pantalla principal para comenzar.")
 
     # El índice RAG se construye SOLO cuando el usuario entra a "Agente IA"
     # (evita penalizar el arranque del Dashboard con la carga del modelo de embeddings).
@@ -699,8 +833,69 @@ with st.sidebar:
         )
 
 
+# ── Pantalla de bienvenida / carga (gatea toda la app) ──────────────────────
+if not st.session_state.data_loaded:
+    st.markdown("<div style='height:5vh'></div>", unsafe_allow_html=True)
+    _cl, _cc, _cr = st.columns([1, 1.8, 1])
+    with _cc:
+        st.markdown(
+            '<div style="text-align:center">'
+            '  <div style="width:78px;height:78px;border-radius:20px;margin:0 auto 18px;'
+            '       background:linear-gradient(135deg,#1A6FB5,#56C7D6);display:flex;'
+            '       align-items:center;justify-content:center;'
+            '       box-shadow:0 12px 34px rgba(26,111,181,.4)">'
+            '    <span style="color:#fff;font-weight:800;font-size:2.1rem">F</span></div>'
+            '  <div style="font-weight:800;font-size:2.3rem;color:var(--navy-800);letter-spacing:-.03em">FRAUDIA</div>'
+            '  <div style="color:var(--muted);font-size:1rem;margin-top:4px">'
+            '       Detección de posibles fraudes en siniestros · Aseguradora del Sur</div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+        st.markdown(
+            '<div class="card-azul" style="text-align:center">'
+            'Selecciona el conjunto de datos a analizar y pulsa <b>Cargar</b>. '
+            'El sistema puntuará los siniestros y dejará todo listo para navegar.'
+            '</div>', unsafe_allow_html=True,
+        )
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+        # Aplicar selección pendiente (tras subir un archivo) ANTES de crear el selectbox
+        if st.session_state.get("_select_ds"):
+            st.session_state["land_ds"] = st.session_state.pop("_select_ds")
+
+        _opts, _rev = _list_datasets()
+        # Si el valor guardado ya no existe en las opciones, resetear al primero
+        if st.session_state.get("land_ds") not in _opts:
+            st.session_state.pop("land_ds", None)
+        _sel = st.selectbox("Conjunto de datos", _opts, key="land_ds")
+
+        with st.expander("Subir otro Excel (5 hojas)"):
+            _up = st.file_uploader("Excel", type=["xlsx", "xls"],
+                                   key="land_uploader", label_visibility="collapsed")
+            # Guardar UNA sola vez por archivo (evita el bucle de recarga)
+            if _up is not None and st.session_state.get("_last_uploaded") != _up.name:
+                try:
+                    with open(os.path.join(_DATASET_DIR, _up.name), "wb") as _f:
+                        _f.write(_up.getbuffer())
+                    st.session_state["_last_uploaded"] = _up.name
+                    st.session_state["_select_ds"] = _DISPLAY_NAMES.get(_up.name, _up.name)
+                    toast(f"'{_up.name}' subido y seleccionado", "success")
+                    st.rerun()
+                except Exception as _e:
+                    st.error(f"Error al guardar: {_e}")
+
+        if st.button("Cargar y analizar dataset", type="primary", use_container_width=True):
+            _do_load(os.path.join(_DATASET_DIR, _rev[_sel]))
+            st.rerun()
+
+        st.caption("FRAUDIA genera alertas de revisión, no acusaciones. La decisión final es del analista humano.")
+    st.stop()
+
+
 # ── Router + encabezado de página dinámico ──────────────────────────────────
 PAGINA = st.session_state.get("nav_page", "Dashboard")
+
 _PAGE_SUB = {
     "Dashboard":        "Panel ejecutivo · Aseguradora del Sur",
     "Siniestro":        "Expediente 360° y validación cruzada de documentos",
@@ -720,17 +915,12 @@ with col_h1:
         unsafe_allow_html=True,
     )
 with col_h2:
-    st.markdown(
-        '<div style="text-align:right;padding-top:4px">'
-        '  <span style="display:inline-block;background:var(--accent-light);color:var(--accent);'
-        '        border:1px solid var(--border-strong);border-radius:999px;padding:4px 12px;'
-        '        font-size:.72rem;font-weight:700;letter-spacing:.02em">hackIAthon 2026</span>'
-        '  <div style="color:var(--faint);font-size:.72rem;margin-top:8px;line-height:1.4">'
-        '       Genera alertas de revisión.<br>No sustituye el análisis humano.</div>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
+    guia_pantalla(PAGINA)
 st.divider()
+
+# Banner del tour guiado (no modal): aparece arriba de la página actual
+if st.session_state.get("show_tour"):
+    _render_tour_banner()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -887,7 +1077,7 @@ if PAGINA == "Manual":
                 "Responde preguntas en lenguaje natural usando los datos reales",
                 "**12 preguntas pre-cargadas** del reto como botones rápidos",
                 "Usa **RAG** con sentence-transformers + FAISS para recuperar contexto",
-                "Genera la respuesta con Groq llama-3.1-8b-instant en **streaming (<3s)**",
+                "Genera la respuesta con Groq llama-3.1-8b-instant en **streaming**",
                 "Cita IDs de siniestros específicos en sus respuestas",
                 "Mantiene el historial del chat",
              ],
@@ -1225,34 +1415,41 @@ if PAGINA == "Dashboard":
     disp["Nivel"] = disp["Nivel"].map({"ROJO":"ROJO","AMARILLO":"AMARILLO","VERDE":"VERDE"})
     disp["Monto Reclamado"] = disp["Monto Reclamado"].apply(lambda x: f"${x:,.0f}")
 
-    st.markdown(f"**{len(filt)} siniestros** encontrados")
-    st.dataframe(disp.reset_index(drop=True), use_container_width=True, height=320)
-
-    # ── Botones exportar ──────────────────────────────────────────────
-    exp_c1, exp_c2 = st.columns([2, 3])
+    # ── Barra de acciones (arriba de la tabla) ────────────────────────
+    exp_c1, exp_c2, exp_c3 = st.columns([2, 2.4, 3])
+    exp_c1.markdown(f"<div style='padding-top:6px'><b>{len(filt)} siniestros</b> encontrados</div>",
+                    unsafe_allow_html=True)
     csv_buf = filt.to_csv(index=False).encode("utf-8")
-    exp_c1.download_button(
-        "Exportar CSV", data=csv_buf,
+    exp_c2.download_button(
+        "Exportar CSV", data=csv_buf, use_container_width=True,
         file_name="fraudia_alertas.csv", mime="text/csv",
     )
-    if exp_c2.button("Generar Reporte PDF Ejecutivo"):
-        with st.spinner("Generando PDF…"):
-            try:
-                from src.report_generator import generate_pdf_report
-                pdf_bytes = generate_pdf_report(
-                    st.session_state.scores_df,
-                    st.session_state.sheets,
-                    st.session_state.combined_df,
-                )
-                st.download_button(
-                    "Descargar Reporte PDF",
-                    data=pdf_bytes,
-                    file_name=f"FRAUDIA_Reporte_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.pdf",
-                    mime="application/pdf",
-                )
-            except Exception as e:
-                st.error(f"Error generando PDF: {e}")
+    # Un solo botón: genera el PDF (cacheado) y lo descarga directo
+    try:
+        _sig = int(pd.to_numeric(st.session_state.scores_df["Score"], errors="coerce").fillna(0).sum())
+        _pdf = _reporte_pdf_bytes(st.session_state.scores_df, st.session_state.sheets,
+                                  st.session_state.combined_df, _sig)
+        exp_c3.download_button(
+            "Descargar Reporte PDF Ejecutivo", data=_pdf, use_container_width=True,
+            file_name=f"FRAUDIA_Reporte_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.pdf",
+            mime="application/pdf",
+        )
+    except Exception as e:
+        exp_c3.error(f"PDF no disponible: {e}")
 
+    def _color_nivel(row):
+        bg = {"ROJO": "#FDECEA", "AMARILLO": "#FEF6E6", "VERDE": "#EAF7F0"}.get(row["Nivel"], "")
+        fg = {"ROJO": "#C0392B", "AMARILLO": "#B7770D", "VERDE": "#0E7D6E"}.get(row["Nivel"], "")
+        styles = [f"background-color:{bg}"] * len(row)
+        # resaltar la celda 'Nivel' con el color del semáforo
+        ncol = list(row.index).index("Nivel")
+        styles[ncol] = f"background-color:{bg};color:{fg};font-weight:700"
+        return styles
+
+    st.dataframe(
+        disp.reset_index(drop=True).style.apply(_color_nivel, axis=1),
+        use_container_width=True, height=320,
+    )
     st.divider()
 
     # ── Gráficos ──────────────────────────────────────────────────────
@@ -1305,8 +1502,8 @@ if PAGINA == "Dashboard":
         }[map_filter]
         mf2.markdown(
             '<div style="padding-top:30px;color:#5D6D7E;font-size:.85rem">'
-            'Las ciudades se clasifican por su <b>nivel predominante</b> '
-            '(el nivel con mayor cantidad de siniestros en esa ciudad).'
+            'En <b>Todos</b>, cada ciudad se colorea por su <b>concentración de riesgo</b> '
+            '(% de casos rojos). Usa el filtro para ver solo un nivel.'
             '</div>', unsafe_allow_html=True,
         )
 
@@ -1371,56 +1568,55 @@ if PAGINA == "Dashboard":
             if ranking_f.empty:
                 st.info("No hay datos para esa combinación.")
             else:
-                # Dos columnas: lista visual + gráfico
-                lst_col, chart_col = st.columns([1, 1])
-
-                with lst_col:
-                    for _, row in ranking_f.iterrows():
-                        casos = int(row[col_count])
-                        pct   = row[col_pct]
-                        total = int(row["Total"])
-                        bar_w = min(int(pct), 100)
-                        st.markdown(
-                            f'<div style="background:white;border:1px solid {border_color};'
-                            f'border-radius:8px;padding:10px 14px;margin:6px 0">'
-                            f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
-                            f'<span style="color:#1A3A5C;font-weight:700;font-size:1rem">{row["Ciudad"]}</span>'
-                            f'<span style="color:{color};font-weight:800">{casos} casos ({pct}%)</span>'
-                            f'</div>'
-                            f'<div style="background:#EAEDED;height:7px;border-radius:4px;overflow:hidden">'
-                            f'<div style="background:{color};width:{bar_w}%;height:7px;border-radius:4px"></div>'
-                            f'</div>'
-                            f'<small style="color:#5D6D7E">Total siniestros: {total} · Score promedio: {row["Score_Prom"]}</small>'
-                            f'</div>',
-                            unsafe_allow_html=True,
-                        )
-
-                with chart_col:
-                    fig_rank = px.bar(
-                        ranking_f.sort_values(col_count, ascending=True),
-                        x=col_count, y="Ciudad", orientation="h",
-                        title=f"Casos {nivel_pick.split()[1]} por Ciudad",
-                        color=col_count,
-                        color_continuous_scale=["#AED6F1", color],
-                        text=col_count,
+                # Tarjetas de ciudades: 2 por fila
+                def _card(row):
+                    casos = int(row[col_count]); pct = row[col_pct]
+                    total = int(row["Total"]); bar_w = min(int(pct), 100)
+                    return (
+                        f'<div style="background:white;border:1px solid {border_color};'
+                        f'border-radius:8px;padding:10px 14px;margin:6px 0">'
+                        f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
+                        f'<span style="color:#1A3A5C;font-weight:700;font-size:1rem">{row["Ciudad"]}</span>'
+                        f'<span style="color:{color};font-weight:800">{casos} casos ({pct}%)</span>'
+                        f'</div>'
+                        f'<div style="background:#EAEDED;height:7px;border-radius:4px;overflow:hidden">'
+                        f'<div style="background:{color};width:{bar_w}%;height:7px;border-radius:4px"></div>'
+                        f'</div>'
+                        f'<small style="color:#5D6D7E">Total siniestros: {total} · Score promedio: {row["Score_Prom"]}</small>'
+                        f'</div>'
                     )
-                    fig_rank.update_traces(textposition="outside")
-                    fig_rank.update_layout(
-                        paper_bgcolor="white", plot_bgcolor="#F8FBFF",
-                        font=dict(color="#1B4F8A"), title_font_color="#1B4F8A",
-                        coloraxis_showscale=False,
-                        xaxis_title=f"Cantidad de casos {nivel_pick.split()[1]}",
-                        yaxis_title="",
-                        height=max(300, 38 * len(ranking_f)),
-                    )
-                    st.plotly_chart(fig_rank, use_container_width=True)
+                _rows = list(ranking_f.iterrows())
+                for _i in range(0, len(_rows), 2):
+                    _cols = st.columns(2)
+                    for _j, (_, _row) in enumerate(_rows[_i:_i + 2]):
+                        _cols[_j].markdown(_card(_row), unsafe_allow_html=True)
+
+                # Gráfico de barras (debajo, ancho completo)
+                fig_rank = px.bar(
+                    ranking_f.sort_values(col_count, ascending=True),
+                    x=col_count, y="Ciudad", orientation="h",
+                    title=f"Casos nivel {nivel_pick} por ciudad",
+                    color=col_count,
+                    color_continuous_scale=["#AED6F1", color],
+                    text=col_count,
+                )
+                fig_rank.update_traces(textposition="outside")
+                fig_rank.update_layout(
+                    paper_bgcolor="white", plot_bgcolor="#F8FBFF",
+                    font=dict(color="#1B4F8A"), title_font_color="#1B4F8A",
+                    coloraxis_showscale=False,
+                    xaxis_title=f"Cantidad de casos {nivel_pick}",
+                    yaxis_title="",
+                    height=max(300, 32 * len(ranking_f)),
+                )
+                st.plotly_chart(fig_rank, use_container_width=True)
 
             with st.expander("Ver ranking completo de ciudades"):
                 rank_full = ranking.sort_values("Total", ascending=False)[
                     ["Ciudad","Total","Rojos","Amarillos","Verdes",
                      "Pct_Rojo","Pct_Amarillo","Pct_Verde","Score_Prom","Nivel_Predominante"]
                 ].reset_index(drop=True)
-                rank_full.columns = ["Ciudad","Total","","","",
+                rank_full.columns = ["Ciudad","Total","Rojos","Amarillos","Verdes",
                                      "% Rojo","% Amarillo","% Verde","Score Prom","Nivel Predominante"]
                 st.dataframe(rank_full, use_container_width=True, hide_index=True)
     except Exception as e:
@@ -1559,7 +1755,7 @@ if PAGINA == "Siniestro":
 
             issues, matches, boost = cross_validate(sin_sel, sin_row, all_f)
             for idx, m in enumerate(matches):
-                col_m1, col_m2 = st.columns([5, 1])
+                col_m1, col_m2 = st.columns([6, 1.4])
                 with col_m1:
                     st.markdown(f'<div class="match-ok"><b>{m["campo"]}</b>: {m["valor"]}</div>', unsafe_allow_html=True)
                 with col_m2:
@@ -1617,14 +1813,41 @@ if PAGINA == "Cargar Documento":
                     else:
                         st.error(f"**{sname}** — No encontrada")
                 if all(r["found"] and not r["missing_cols"] for r in val.values()):
-                    if st.button("Usar como dataset activo"):
-                        sc2 = calculate_scores_batch(new_sh, None)
-                        st.session_state.update(sheets=new_sh, scores_df=sc2, data_loaded=True, rag_ready=False)
-                        st.success("Dataset cargado."); st.rerun()
+                    _b1, _b2 = st.columns(2)
+                    if _b1.button("Usar como dataset activo (reemplazar)", use_container_width=True):
+                        with st.spinner("Analizando…"):
+                            sc2 = calculate_scores_batch(new_sh, None)
+                            st.session_state.update(sheets=new_sh, scores_df=sc2,
+                                                    data_loaded=True, rag_ready=False, rag=None)
+                        st.success(f"Dataset cargado · {len(sc2)} siniestros."); st.rerun()
+                    if _b2.button("Agregar al dataset actual (combinar)", use_container_width=True):
+                        with st.spinner("Combinando datasets…"):
+                            _id_col = {
+                                "1_Siniestros": "ID Siniestro", "2_Polizas": "ID Póliza",
+                                "3_Asegurados": "ID Asegurado", "4_Proveedores": "ID Proveedor",
+                                "5_Documentos": "ID Documento",
+                            }
+                            merged = {}
+                            cur = st.session_state.sheets or {}
+                            for sn in set(list(cur.keys()) + list(new_sh.keys())):
+                                a = cur.get(sn, pd.DataFrame())
+                                b = new_sh.get(sn, pd.DataFrame())
+                                comb = pd.concat([a, b], ignore_index=True)
+                                key = _id_col.get(sn)
+                                if key and key in comb.columns:
+                                    comb = comb.drop_duplicates(subset=[key], keep="first").reset_index(drop=True)
+                                merged[sn] = comb
+                            sc2 = calculate_scores_batch(merged, None)
+                            st.session_state.update(sheets=merged, scores_df=sc2,
+                                                    data_loaded=True, rag_ready=False, rag=None)
+                        st.success(f"Datasets combinados · {len(sc2)} siniestros en total."); st.rerun()
             except Exception as e:
                 st.error(str(e))
             finally:
-                os.unlink(tmp_path)
+                try:
+                    os.unlink(tmp_path)
+                except Exception:
+                    pass
 
     else:
         updf = st.file_uploader("Cargar PDF", type=["pdf"], key="updf")
@@ -1676,7 +1899,7 @@ if PAGINA == "Cargar Documento":
                     with c1:
                         st.markdown(f"**Coincidencias ({len(matches)})**")
                         for idx, m in enumerate(matches):
-                            col_m1, col_m2 = st.columns([5, 1])
+                            col_m1, col_m2 = st.columns([5, 1.6])
                             with col_m1:
                                 st.markdown(f'<div class="match-ok"><b>{m["campo"]}</b>: {m["valor"]}</div>', unsafe_allow_html=True)
                             with col_m2:
@@ -1688,16 +1911,48 @@ if PAGINA == "Cargar Documento":
                         for iss in issues:
                             st.markdown(f'<div class="issue-{iss["nivel"]}"><b>[{iss["nivel"]}] {iss["campo"]}</b><br><i>{iss["descripcion"]}</i></div>', unsafe_allow_html=True)
 
-                    base_r = score_siniestro(ex_row, fields)
+                    # Inyectar las señales críticas detectadas en el cruce (lógica imposible,
+                    # documento alterado) para que las reglas RF-02/RF-04 se apliquen.
+                    pdf_sig = dict(fields)
+                    _crit = " ".join(i.get("descripcion", "").lower() for i in issues)
+                    if "imposible" in _crit:
+                        pdf_sig["logica_imposible"] = True
+                    if "alterado" in _crit or any(i.get("campo") == "Integridad documental" for i in issues):
+                        pdf_sig["documento_alterado"] = True
+
+                    base_r = score_siniestro(ex_row, pdf_sig)
                     total  = min(base_r["score"] + boost, 100)
-                    nivel2 = "ROJO" if total>=76 else "AMARILLO" if total>=41 else "VERDE"
-                    em2    = {"ROJO":"","AMARILLO":"","VERDE":""}[nivel2]
-                    c_n2   = {"ROJO":"#E74C3C","AMARILLO":"#F39C12","VERDE":"#27AE60"}[nivel2]
+                    # Respetar las reglas críticas (no solo el umbral numérico)
+                    if base_r["critical_rojo"]:
+                        total = max(total, 76); nivel2 = "ROJO"
+                    elif total >= 76:
+                        nivel2 = "ROJO"
+                    elif base_r["critical_amarillo"] or total >= 41:
+                        total = max(total, 41); nivel2 = "AMARILLO"
+                    else:
+                        nivel2 = "VERDE"
+                    c_n2 = {"ROJO": "#C0392B", "AMARILLO": "#B7770D", "VERDE": "#0E7D6E"}[nivel2]
                     st.markdown(
                         f'<div style="background:{c_n2}18;border:2px solid {c_n2};border-radius:10px;'
                         f'padding:12px 18px;margin-top:10px">'
                         f'<span style="font-size:1.3rem;font-weight:800;color:{c_n2}">'
-                        f'{em2} Score actualizado: {total}/100 — {nivel2}</span></div>',
+                        f'Score actualizado: {total}/100 — {nivel2}</span></div>',
+                        unsafe_allow_html=True,
+                    )
+                    # Conclusión accionable para el caso
+                    _motivos = base_r.get("critical_rules", [])
+                    _accion = {
+                        "ROJO": "Escalar a la Unidad Antifraude para revisión de campo.",
+                        "AMARILLO": "Escalar para revisión documental antes de pagar.",
+                        "VERDE": "Continuar el flujo normal de procesamiento.",
+                    }[nivel2]
+                    _txt_motivos = (" Motivos: " + "; ".join(_motivos) + ".") if _motivos else ""
+                    _crit_count = sum(1 for i in issues if i.get("nivel") == "CRÍTICO")
+                    if _crit_count and nivel2 != "ROJO":
+                        _txt_motivos += f" Atención: hay {_crit_count} inconsistencia(s) CRÍTICA(s) que el analista debe revisar."
+                    st.markdown(
+                        f'<div class="card-{ "rojo" if nivel2=="ROJO" else "amar" if nivel2=="AMARILLO" else "verde" }">'
+                        f'<b>Conclusión:</b> nivel <b>{nivel2}</b>. {_accion}{_txt_motivos}</div>',
                         unsafe_allow_html=True,
                     )
                     if st.session_state.rag_ready:
@@ -1806,7 +2061,7 @@ if PAGINA == "Agente IA":
         '<b>Sistema RAG local + Groq llama-3.1-8b-instant</b><br>'
         '<small style="color:#5D6D7E">'
         'Indexa tus 500 siniestros + 24 PDFs en vectores (sentence-transformers + FAISS) '
-        'y recupera contexto relevante para que el LLM responda en &lt;3 segundos. '
+        'y recupera contexto relevante para que el LLM responda con la evidencia del dataset. '
         'Sin reglas if/else — generación aumentada por recuperación.'
         '</small></div></div>',
         unsafe_allow_html=True,
@@ -1827,7 +2082,7 @@ if PAGINA == "Agente IA":
             st.markdown(
                 '<div class="card-verde" style="padding:12px 18px;margin-bottom:12px">'
                 '<b>Agente activo — Modo Completo</b><br>'
-                '<small>RAG + Groq llama-3.1-8b-instant. Respuestas naturales en &lt;3s con streaming.</small>'
+                '<small>RAG + Groq llama-3.1-8b-instant. Respuestas naturales con streaming.</small>'
                 '</div>', unsafe_allow_html=True,
             )
     else:
@@ -1892,36 +2147,31 @@ if PAGINA == "Agente IA":
 
     st.divider()
 
-    # ── Chat ─────────────────────────────────────────────────────────
-    # Mostrar TODO el historial primero
+    # ── Chat (burbujas nativas con markdown bien renderizado) ─────────
     for msg in st.session_state.chat_history:
-        css = "chat-user" if msg["role"] == "user" else "chat-bot"
-        who = "Analista" if msg["role"] == "user" else "Agente FRAUDIA"
-        st.markdown(
-            f'<div class="{css}"><b>{who}:</b> {msg["content"]}</div>',
-            unsafe_allow_html=True,
-        )
+        rol = "user" if msg["role"] == "user" else "assistant"
+        with st.chat_message(rol, avatar=("🧑‍💼" if rol == "user" else "🛡️")):
+            st.markdown(msg["content"])
 
     # Procesar pregunta pendiente (si existe)
     if st.session_state.pending_question:
         q = st.session_state.pending_question
-        # Mostrar la pregunta del usuario
-        st.markdown(
-            f'<div class="chat-user"><b>Analista:</b> {q}</div>',
-            unsafe_allow_html=True,
-        )
-        hist = [m for m in st.session_state.chat_history if m["role"] in ("user","assistant")]
+        with st.chat_message("user", avatar="🧑‍💼"):
+            st.markdown(q)
+        hist = [m for m in st.session_state.chat_history if m["role"] in ("user", "assistant")]
 
-        # Streaming con st.write_stream — mucho más estable que st.empty()
         try:
             import time as _t
             t0 = _t.time()
-            st.markdown('<div class="chat-bot"><b>Agente FRAUDIA:</b></div>', unsafe_allow_html=True)
-            response_text = st.write_stream(st.session_state.rag.answer_stream(q, hist))
-            elapsed = _t.time() - t0
-            st.caption(f"Respondido en {elapsed:.1f}s")
+            with st.chat_message("assistant", avatar="🛡️"):
+                with st.spinner("El agente está analizando el expediente…"):
+                    response_text = st.write_stream(st.session_state.rag.answer_stream(q, hist))
+                if not (response_text or "").strip():
+                    response_text = ("No encontré información suficiente en el dataset para responder eso. "
+                                     "Prueba reformular la pregunta o usa una de las sugeridas.")
+                    st.markdown(response_text)
+                st.caption(f"Respondido en {_t.time()-t0:.1f}s")
 
-            # Guardar en historial
             st.session_state.chat_history.append({"role": "user", "content": q})
             st.session_state.chat_history.append({"role": "assistant", "content": response_text})
             st.session_state.pending_question = None
@@ -1964,6 +2214,15 @@ if PAGINA == "Modelo ML":
     if not st.session_state.data_loaded:
         st.info("Carga el dataset primero.")
         st.stop()
+
+    st.markdown(
+        '<div class="card-azul"><b>¿Para qué sirve esta pantalla?</b> Aquí entrenas los modelos de '
+        'IA que <b>estiman la probabilidad de fraude</b> de cada siniestro y muestran <b>qué variables '
+        'pesan más</b> y <b>qué tan bien funciona el modelo</b> (AUC, F1). Sirve para priorizar casos '
+        'con respaldo estadístico, no solo con reglas.</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("")
 
     ml_subtab1, ml_subtab2, ml_subtab3 = st.tabs([
         "Random Forest Supervisado",
@@ -2207,10 +2466,15 @@ if PAGINA == "Modelo ML":
     with ml_subtab3:
         st.markdown("### Red de Narrativas Clonadas — Posibles Anillos de Fraude Coordinado")
         st.markdown(
-            '<div class="card-rojo">Los nodos representan siniestros con descripciones similares entre sí. '
-            'Las aristas indican similitud de texto ≥65%. Grupos conectados pueden indicar '
-            'fraude coordinado donde múltiples reclamantes usaron el mismo relato.</div>',
+            '<div class="card-rojo">Cada nodo es un siniestro; las aristas conectan relatos con '
+            'alta similitud de texto. Grupos grandes pueden indicar <b>fraude coordinado</b> '
+            '(varios reclamantes con el mismo relato) — la base de la regla RF-07.</div>',
             unsafe_allow_html=True,
+        )
+        st.caption(
+            "Nota: el dataset sintético usa descripciones de plantilla (≈33 textos para 500 "
+            "siniestros), por lo que muchos casos quedan agrupados. Para legibilidad, el grafo "
+            "muestra los grupos más grandes/riesgosos; los totales completos están en las tarjetas."
         )
         st.markdown("")
 
@@ -2250,7 +2514,21 @@ if PAGINA == "Modelo ML":
                 st.markdown("")
 
                 from src.anomaly_model import build_narrative_graph
-                fig_narr = build_narrative_graph(cl)
+
+                # Limitar el grafo a los Top grupos (por rojos y tamaño) para que sea legible
+                top_n = st.slider("Grupos a mostrar en el grafo", 3, 15, 8, 1, key="narr_topn")
+                _groups = sorted(cl.get("groups", []),
+                                 key=lambda g: (-g.get("n_rojo", 0), -g.get("tamaño", 0)))[:top_n]
+                _ids_top = set()
+                for g in _groups:
+                    _ids_top.update(g.get("siniestros", []))
+                _pairs_top = [p for p in cl.get("pairs", [])
+                              if p["sin_a"] in _ids_top and p["sin_b"] in _ids_top]
+                cl_top = dict(cl)
+                cl_top["pairs"] = _pairs_top
+                st.caption(f"Mostrando {len(_groups)} de {cl['n_groups']} grupos · "
+                           f"{len(_ids_top)} siniestros · {len(_pairs_top)} conexiones en el grafo.")
+                fig_narr = build_narrative_graph(cl_top)
                 st.plotly_chart(fig_narr, use_container_width=True)
 
                 # Tabla de grupos clonados
@@ -2288,6 +2566,7 @@ if PAGINA == "Red Relacional":
             key="net_fil",
         )
         with st.spinner("Construyendo grafo…"):
+            from src.network_graph import build_graph
             fig_net = build_graph(
                 st.session_state.sheets,
                 st.session_state.scores_df,
@@ -2459,7 +2738,8 @@ if PAGINA == "Proveedores":
 
             st.divider()
             tipo_f = ["Todos"] + sorted(prov_df["Tipo"].dropna().unique().tolist())
-            tp_sel = st.selectbox("Tipo", tipo_f, key="prov_tipo")
+            _fcol, _ = st.columns([1, 2])
+            tp_sel = _fcol.selectbox("Tipo de proveedor", tipo_f, key="prov_tipo")
             pshow = prov_df if tp_sel=="Todos" else prov_df[prov_df["Tipo"]==tp_sel]
             pshow = pshow.sort_values("Alertas_Rojas", ascending=False)
 
@@ -2474,14 +2754,19 @@ if PAGINA == "Proveedores":
                       "N° Siniestros Asociados","En Lista Restrictiva",
                       "Motivo Restricción","Promedio Monto ($)","Alertas_Rojas"]
                       if c in pshow.columns]
+
+            # Exportar (arriba de la tabla)
+            _pc1, _pc2 = st.columns([3, 1.4])
+            _pc1.markdown(f"<div style='padding-top:6px'><b>{len(pshow)} proveedores</b></div>",
+                          unsafe_allow_html=True)
+            csv_p = pshow[cols_p].to_csv(index=False).encode("utf-8")
+            _pc2.download_button("Exportar proveedores", csv_p, "proveedores.csv", "text/csv",
+                                 use_container_width=True)
+
             st.dataframe(
                 pshow[cols_p].reset_index(drop=True).style.apply(_color_prov, axis=1),
                 use_container_width=True, height=380,
             )
-
-            # Exportar proveedores
-            csv_p = pshow[cols_p].to_csv(index=False).encode("utf-8")
-            st.download_button("Exportar proveedores", csv_p, "proveedores.csv", "text/csv")
 
             top10p = pshow.nlargest(10,"Alertas_Rojas")
             if not top10p.empty and top10p["Alertas_Rojas"].sum() > 0:
