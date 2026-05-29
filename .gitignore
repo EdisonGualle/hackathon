@@ -1,0 +1,86 @@
+# ==============================================================================
+# FRAUDIA - .gitignore
+# Aseguradora del Sur · hackIAthon 2026
+# ==============================================================================
+
+# --- Archivos del Entorno Virtual y Dependencias ---
+.venv/
+venv/
+env/
+ENV/
+bin/
+lib/
+lib64/
+include/
+share/
+pyvenv.cfg
+pip-selfcheck.json
+
+# --- Caché y Archivos de Compilación de Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# --- Variables de Entorno y Configuración Sensible ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.streamlit/secrets.toml
+
+# --- Caché de Modelos y Datos de Aplicación (RAG / Embeddings) ---
+# Importante: No subir índices vectoriales FAISS ni caché de modelos de Hugging Face local
+data/cache/
+data/cache/hf/
+*.faiss
+*.pkl
+
+# --- Informes, Logs y Archivos Temporales ---
+*.log
+tunnel.log
+*.tmp
+*.temp
+~$*
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# --- Pruebas y Cobertura (Testing) ---
+.pytest_cache/
+.tox/
+.noscript/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+htmlcov/
+.hypothesis/
+
+# --- Configuraciones de Editores e IDEs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
