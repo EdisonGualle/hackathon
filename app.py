@@ -577,19 +577,19 @@ def _render_tour_banner():
         unsafe_allow_html=True,
     )
     c1, c2, c3 = st.columns(3)
-    if step > 0 and c1.button("← Anterior", use_container_width=True, key="tour_prev"):
+    if step > 0 and c1.button("← Anterior", width='stretch', key="tour_prev"):
         st.session_state.tour_step = step - 1
         st.session_state._goto = _TOUR[step - 1][0]
         st.rerun()
     if step < len(_TOUR) - 1:
-        if c2.button("Siguiente →", type="primary", use_container_width=True, key="tour_next"):
+        if c2.button("Siguiente →", type="primary", width='stretch', key="tour_next"):
             st.session_state.tour_step = step + 1
             st.session_state._goto = _TOUR[step + 1][0]
             st.rerun()
     else:
-        if c2.button("Finalizar", type="primary", use_container_width=True, key="tour_done"):
+        if c2.button("Finalizar", type="primary", width='stretch', key="tour_done"):
             _fin_tour(); st.rerun()
-    if c3.button("Saltar tour", use_container_width=True, key="tour_skip"):
+    if c3.button("Saltar tour", width='stretch', key="tour_skip"):
         _fin_tour(); st.rerun()
 
 
@@ -634,7 +634,7 @@ def guia_pantalla(pagina: str):
     texto = _GUIA.get(pagina)
     if not texto:
         return
-    with st.popover("Guía de pantalla", use_container_width=False):
+    with st.popover("Guía de pantalla", width='content'):
         st.markdown(f"**{pagina}**")
         st.markdown(texto)
 
@@ -702,12 +702,12 @@ def mostrar_modal_coincidencia(match_data: dict, row: dict, all_pdf_fields: dict
     ]
 
     df_comp = pd.DataFrame(comparison_data)
-    st.dataframe(df_comp, use_container_width=True, hide_index=True)
+    st.dataframe(df_comp, width='stretch', hide_index=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.info(f"**Origen de la alerta:** Hiciste clic en la validación de: **{campo_origen}** (Valor verificado: `{match_data.get('valor')}`)")
     
-    if st.button("Cerrar", use_container_width=True):
+    if st.button("Cerrar", width='stretch'):
         st.rerun()
 
 
@@ -749,11 +749,11 @@ with st.sidebar:
         with st.expander("Cambiar dataset", expanded=False):
             _opts, _rev = _list_datasets()
             _sel = st.selectbox("Dataset", _opts, label_visibility="collapsed", key="sb_ds")
-            if st.button("Recargar", use_container_width=True, key="sb_reload"):
+            if st.button("Recargar", width='stretch', key="sb_reload"):
                 _do_load(os.path.join(_DATASET_DIR, _rev[_sel]))
                 st.rerun()
 
-        if st.button("Ver tour guiado", use_container_width=True, key="sb_tour"):
+        if st.button("Ver tour guiado", width='stretch', key="sb_tour"):
             st.session_state.tour_step = 0
             st.session_state.show_tour = True
             st.session_state._goto = _TOUR[0][0]
@@ -885,7 +885,7 @@ if not st.session_state.data_loaded:
                 except Exception as _e:
                     st.error(f"Error al guardar: {_e}")
 
-        if st.button("Cargar y analizar dataset", type="primary", use_container_width=True):
+        if st.button("Cargar y analizar dataset", type="primary", width='stretch'):
             _do_load(os.path.join(_DATASET_DIR, _rev[_sel]))
             st.rerun()
 
@@ -1421,7 +1421,7 @@ if PAGINA == "Dashboard":
                     unsafe_allow_html=True)
     csv_buf = filt.to_csv(index=False).encode("utf-8")
     exp_c2.download_button(
-        "Exportar CSV", data=csv_buf, use_container_width=True,
+        "Exportar CSV", data=csv_buf, width='stretch',
         file_name="fraudia_alertas.csv", mime="text/csv",
     )
     # Un solo botón: genera el PDF (cacheado) y lo descarga directo
@@ -1430,7 +1430,7 @@ if PAGINA == "Dashboard":
         _pdf = _reporte_pdf_bytes(st.session_state.scores_df, st.session_state.sheets,
                                   st.session_state.combined_df, _sig)
         exp_c3.download_button(
-            "Descargar Reporte PDF Ejecutivo", data=_pdf, use_container_width=True,
+            "Descargar Reporte PDF Ejecutivo", data=_pdf, width='stretch',
             file_name=f"FRAUDIA_Reporte_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.pdf",
             mime="application/pdf",
         )
@@ -1448,7 +1448,7 @@ if PAGINA == "Dashboard":
 
     st.dataframe(
         disp.reset_index(drop=True).style.apply(_color_nivel, axis=1),
-        use_container_width=True, height=320,
+        width='stretch', height=320,
     )
     st.divider()
 
@@ -1466,7 +1466,7 @@ if PAGINA == "Dashboard":
         )
         fig_pie.update_layout(paper_bgcolor="white", plot_bgcolor="white",
                               font=dict(color="#1B4F8A"), title_font_color="#1B4F8A")
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width='stretch')
 
     with g2:
         ramo_risk = df.groupby("Ramo")["Score"].mean().sort_values(ascending=False).reset_index()
@@ -1479,7 +1479,7 @@ if PAGINA == "Dashboard":
         fig_bar.update_layout(paper_bgcolor="white", plot_bgcolor="#F8FBFF",
                               font=dict(color="#1B4F8A"), title_font_color="#1B4F8A",
                               coloraxis_showscale=False)
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width='stretch')
 
     # ── Mapa Ecuador ─────────────────────────────────────────────────
     st.markdown("### Mapa de Alertas por Ciudad — Ecuador")
@@ -1508,7 +1508,7 @@ if PAGINA == "Dashboard":
         )
 
         fig_map = build_ecuador_map(df, sin_df, filter_nivel=filter_clean)
-        st.plotly_chart(fig_map, use_container_width=True)
+        st.plotly_chart(fig_map, width='stretch')
     except Exception as e:
         st.info(f"Mapa no disponible: {e}")
 
@@ -1609,7 +1609,7 @@ if PAGINA == "Dashboard":
                     yaxis_title="",
                     height=max(300, 32 * len(ranking_f)),
                 )
-                st.plotly_chart(fig_rank, use_container_width=True)
+                st.plotly_chart(fig_rank, width='stretch')
 
             with st.expander("Ver ranking completo de ciudades"):
                 rank_full = ranking.sort_values("Total", ascending=False)[
@@ -1618,7 +1618,7 @@ if PAGINA == "Dashboard":
                 ].reset_index(drop=True)
                 rank_full.columns = ["Ciudad","Total","Rojos","Amarillos","Verdes",
                                      "% Rojo","% Amarillo","% Verde","Score Prom","Nivel Predominante"]
-                st.dataframe(rank_full, use_container_width=True, hide_index=True)
+                st.dataframe(rank_full, width='stretch', hide_index=True)
     except Exception as e:
         st.warning(f"Ranking no disponible: {e}")
 
@@ -1734,7 +1734,7 @@ if PAGINA == "Siniestro":
                                   for k, v in fields_extracted.items()
                                   if v and str(v) not in ("", "False", "0") and not k.startswith("_")]
                     if field_rows:
-                        st.dataframe(pd.DataFrame(field_rows), use_container_width=True, hide_index=True)
+                        st.dataframe(pd.DataFrame(field_rows), width='stretch', hide_index=True)
                 except Exception as e:
                     st.error(f"Error extrayendo datos: {e}")
                 
@@ -1814,13 +1814,13 @@ if PAGINA == "Cargar Documento":
                         st.error(f"**{sname}** — No encontrada")
                 if all(r["found"] and not r["missing_cols"] for r in val.values()):
                     _b1, _b2 = st.columns(2)
-                    if _b1.button("Usar como dataset activo (reemplazar)", use_container_width=True):
+                    if _b1.button("Usar como dataset activo (reemplazar)", width='stretch'):
                         with st.spinner("Analizando…"):
                             sc2 = calculate_scores_batch(new_sh, None)
                             st.session_state.update(sheets=new_sh, scores_df=sc2,
                                                     data_loaded=True, rag_ready=False, rag=None)
                         st.success(f"Dataset cargado · {len(sc2)} siniestros."); st.rerun()
-                    if _b2.button("Agregar al dataset actual (combinar)", use_container_width=True):
+                    if _b2.button("Agregar al dataset actual (combinar)", width='stretch'):
                         with st.spinner("Combinando datasets…"):
                             _id_col = {
                                 "1_Siniestros": "ID Siniestro", "2_Polizas": "ID Póliza",
@@ -1872,7 +1872,7 @@ if PAGINA == "Cargar Documento":
             field_rows = [{"Campo": k, "Valor": str(v)} for k, v in fields.items()
                           if v and str(v) not in ("","False","0") and not k.startswith("_")]
             if field_rows:
-                st.dataframe(pd.DataFrame(field_rows), use_container_width=True, hide_index=True)
+                st.dataframe(pd.DataFrame(field_rows), width='stretch', hide_index=True)
 
             for msg, lvl in [
                 ("DOCUMENTO MARCADO COMO ALTERADO", "error" if fields.get("documento_alterado") else ""),
@@ -1972,7 +1972,7 @@ if PAGINA == "Cargar Documento":
                         '</div>', unsafe_allow_html=True
                     )
                     
-                    if st.button("Registrar Siniestro en Base de Datos", use_container_width=True, type="primary", key="btn_auto_ingest"):
+                    if st.button("Registrar Siniestro en Base de Datos", width='stretch', type="primary", key="btn_auto_ingest"):
                         with st.spinner("Procesando auto-ingesta y registrando en caliente…"):
                             try:
                                 # 1. Extraer los datos para el nuevo siniestro
@@ -2135,7 +2135,7 @@ if PAGINA == "Agente IA":
         emoji = "" if i < 3 else "" if i < 6 else ""
         label = f"{emoji} {s[:42]}…" if len(s) > 42 else f"{emoji} {s}"
         clicked = [sc1, sc2, sc3][i % 3].button(
-            label, key=f"pdf_q{i}", use_container_width=True, help=s,
+            label, key=f"pdf_q{i}", width='stretch', help=s,
             disabled=(not st.session_state.rag_ready or st.session_state.pending_question is not None),
         )
         if clicked and st.session_state.rag_ready and st.session_state.pending_question is None:
@@ -2188,7 +2188,7 @@ if PAGINA == "Agente IA":
             disabled=(st.session_state.pending_question is not None),
         )
         submitted = st.form_submit_button(
-            "Enviar", use_container_width=True,
+            "Enviar", width='stretch',
             disabled=(st.session_state.pending_question is not None),
         )
         if submitted and ui.strip() and st.session_state.pending_question is None:
@@ -2316,7 +2316,7 @@ if PAGINA == "Modelo ML":
                     font=dict(color="#1B4F8A"), title_font_color="#1B4F8A",
                     legend=dict(font=dict(color="#1B4F8A")), height=380,
                 )
-                st.plotly_chart(roc_fig, use_container_width=True)
+                st.plotly_chart(roc_fig, width='stretch')
 
             with col_rf2:
                 # Feature Importance
@@ -2334,7 +2334,7 @@ if PAGINA == "Modelo ML":
                     font=dict(color="#1B4F8A"), title_font_color="#1B4F8A",
                     coloraxis_showscale=False, height=380,
                 )
-                st.plotly_chart(fig_fi, use_container_width=True)
+                st.plotly_chart(fig_fi, width='stretch')
 
             # Confusion Matrix
             st.markdown("#### Matriz de Confusión")
@@ -2350,7 +2350,7 @@ if PAGINA == "Modelo ML":
             )
             fig_cm.update_layout(paper_bgcolor="white", font=dict(color="#1B4F8A"),
                                  title_font_color="#1B4F8A", height=300)
-            st.plotly_chart(fig_cm, use_container_width=True)
+            st.plotly_chart(fig_cm, width='stretch')
 
             # Score Combinado
             if comb is not None:
@@ -2368,7 +2368,7 @@ if PAGINA == "Modelo ML":
                     )
                     fig_dc.update_layout(paper_bgcolor="white", font=dict(color="#1B4F8A"),
                                          title_font_color="#1B4F8A")
-                    st.plotly_chart(fig_dc, use_container_width=True)
+                    st.plotly_chart(fig_dc, width='stretch')
                 with tc2:
                     fig_sc2 = px.scatter(
                         comb, x="Score_Reglas", y="RF_Score",
@@ -2384,11 +2384,11 @@ if PAGINA == "Modelo ML":
                     fig_sc2.update_layout(paper_bgcolor="white", plot_bgcolor="#F8FBFF",
                                           font=dict(color="#1B4F8A"), title_font_color="#1B4F8A",
                                           legend=dict(font=dict(color="#1B4F8A")), height=360)
-                    st.plotly_chart(fig_sc2, use_container_width=True)
+                    st.plotly_chart(fig_sc2, width='stretch')
 
                 top_comb = comb.head(10)[["ID Siniestro","Score_Reglas","Anomaly_Score","RF_Score","Score_Final","Nivel_Final","Cobertura"]]
                 top_comb.columns = ["Siniestro","Score Reglas","Score IF","Score RF","Score Final","Nivel","Cobertura"]
-                st.dataframe(top_comb.reset_index(drop=True), use_container_width=True)
+                st.dataframe(top_comb.reset_index(drop=True), width='stretch')
 
             if st.button("Reentrenar RF"):
                 st.session_state.rf_result = None
@@ -2447,7 +2447,7 @@ if PAGINA == "Modelo ML":
                                  annotation_text="Umbral IF")
                 fig_if.update_layout(paper_bgcolor="white", plot_bgcolor="#F8FBFF",
                                      font=dict(color="#1B4F8A"), height=380)
-                st.plotly_chart(fig_if, use_container_width=True)
+                st.plotly_chart(fig_if, width='stretch')
             with cif2:
                 fi_if = ml["feature_importance"]
                 fi_if_df = pd.DataFrame(list(fi_if.items()), columns=["Variable","Importancia (%)"])
@@ -2460,7 +2460,7 @@ if PAGINA == "Modelo ML":
                 )
                 fig_fi_if.update_layout(paper_bgcolor="white", plot_bgcolor="#F8FBFF",
                                         font=dict(color="#1B4F8A"), coloraxis_showscale=False, height=380)
-                st.plotly_chart(fig_fi_if, use_container_width=True)
+                st.plotly_chart(fig_fi_if, width='stretch')
 
     # ── SUB-TAB C: NARRATIVAS CLONADAS ───────────────────────────────
     with ml_subtab3:
@@ -2529,7 +2529,7 @@ if PAGINA == "Modelo ML":
                 st.caption(f"Mostrando {len(_groups)} de {cl['n_groups']} grupos · "
                            f"{len(_ids_top)} siniestros · {len(_pairs_top)} conexiones en el grafo.")
                 fig_narr = build_narrative_graph(cl_top)
-                st.plotly_chart(fig_narr, use_container_width=True)
+                st.plotly_chart(fig_narr, width='stretch')
 
                 # Tabla de grupos clonados
                 if cl.get("groups"):
@@ -2545,7 +2545,7 @@ if PAGINA == "Modelo ML":
                             "Score máx": g["score_max"],
                             "Primeros siniestros": ", ".join(g["siniestros"][:5]),
                         })
-                    st.dataframe(pd.DataFrame(grp_rows), use_container_width=True, height=350)
+                    st.dataframe(pd.DataFrame(grp_rows), width='stretch', height=350)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -2574,7 +2574,7 @@ if PAGINA == "Red Relacional":
             )
         fig_net.update_layout(paper_bgcolor="white", plot_bgcolor="white",
                               font=dict(color="#1B4F8A"))
-        st.plotly_chart(fig_net, use_container_width=True)
+        st.plotly_chart(fig_net, width='stretch')
 
         lc = st.columns(5)
         for col, (ic, lb) in zip(lc, [
@@ -2668,7 +2668,7 @@ if PAGINA == "Ética":
                                      font=dict(color="#1B4F8A"), title_font_color="#1B4F8A",
                                      coloraxis_showscale=False, yaxis_title="% Críticos",
                                      showlegend=False, height=280)
-            st.plotly_chart(fig_bias_r, use_container_width=True)
+            st.plotly_chart(fig_bias_r, width='stretch')
 
             # Sesgo por sucursal
             bias_suc = df_bias.groupby("Sucursal").agg(
@@ -2684,7 +2684,7 @@ if PAGINA == "Ética":
             fig_bias_s.update_layout(paper_bgcolor="white", plot_bgcolor="#F8FBFF",
                                      font=dict(color="#1B4F8A"), title_font_color="#1B4F8A",
                                      coloraxis_showscale=False, height=280)
-            st.plotly_chart(fig_bias_s, use_container_width=True)
+            st.plotly_chart(fig_bias_s, width='stretch')
 
             st.markdown(
                 '<div class="card-azul"><b>Recomendación:</b> Si algún ramo o sucursal muestra '
@@ -2761,11 +2761,11 @@ if PAGINA == "Proveedores":
                           unsafe_allow_html=True)
             csv_p = pshow[cols_p].to_csv(index=False).encode("utf-8")
             _pc2.download_button("Exportar proveedores", csv_p, "proveedores.csv", "text/csv",
-                                 use_container_width=True)
+                                 width='stretch')
 
             st.dataframe(
                 pshow[cols_p].reset_index(drop=True).style.apply(_color_prov, axis=1),
-                use_container_width=True, height=380,
+                width='stretch', height=380,
             )
 
             top10p = pshow.nlargest(10,"Alertas_Rojas")
@@ -2779,4 +2779,4 @@ if PAGINA == "Proveedores":
                 fig_pv.update_layout(paper_bgcolor="white", plot_bgcolor="#F8FBFF",
                                      font=dict(color="#1B4F8A"), title_font_color="#1B4F8A",
                                      coloraxis_showscale=False)
-                st.plotly_chart(fig_pv, use_container_width=True)
+                st.plotly_chart(fig_pv, width='stretch')
